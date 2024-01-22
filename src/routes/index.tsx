@@ -13,12 +13,12 @@ export default component$(() => {
   let y = window.screen.height / 3.8 - window.innerHeight /2;
   await appWindow.setPosition(new LogicalPosition(x, y));
 
-  //   appWindow.setFocus();
-  //   await appWindow.onFocusChanged(async () => {
-  //     if (!(await appWindow.isFocused())){
-  //       appWindow.close();
-  //     }
-  // })
+    appWindow.setFocus();
+    await appWindow.onFocusChanged(async () => {
+      if (!(await appWindow.isFocused())){
+        appWindow.close();
+      }
+  })
 
   inputElement?.addEventListener("input", async function() {
     await appWindow.setPosition(new LogicalPosition(x, y));
