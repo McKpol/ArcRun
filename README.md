@@ -4,7 +4,7 @@ ArcRun is clone of spotlight search from macos and powertoys from windows, but b
 We are using Tauri and Qwik to build this WebApp.
 App is on early development, now it only looks nice.
 
-![image](https://github.com/McKpol/ArcRun/assets/104125769/8e36ea40-16d0-4b69-8abe-3a8cf7c6909e)
+![image](https://github.com/McKpol/ArcRun/assets/104125769/7465cbed-4318-442e-9413-959c84e69eae)
 
 ## How to use it?
 1. Clone repo with ```git clone McKpol/ArcRun``` or by downloading zip
