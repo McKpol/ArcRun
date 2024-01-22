@@ -21,6 +21,13 @@ tauri = { version = "1.5.4", features = [ "api-all", "macos-private-api"] }
 walkdir = "2.4.0"
 whoami = "1.4.1"
 
+[dependencies.windows]
+version = "0.36.1"
+features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+]
+
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
