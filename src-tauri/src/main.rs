@@ -52,30 +52,45 @@ fn main() {
 }
 
 #[tauri::command]
-fn search(search: String) -> String {
+fn search(search: String) -> Vec<String> {
+  // Data
   let user_name = whoami::username();
   let path_file = format!("C:/Users/{}/AppData/Roaming/arcrun/", user_name);
   let chprocut_file = format!("{}/chprocut", path_file);
-  
+
   let mut filecut_ = File::open(chprocut_file).unwrap();
   let mut buf = String::new();
   let mut nline = 0;
+  let mut nb_result = 0;
+  let mut lista: Vec<String> = Vec::new();
   filecut_.read_to_string(&mut buf).unwrap();
   
+  // Search in file chprocut_file
   for line in buf.lines(){
     if line.to_lowercase().contains(&search){
-      println!("{} {}", search, nline);
-      break;
+      nb_result += 1;
+      // println!("{} {} {}", search, nline, nb_result);
+      lista.push(nline.to_string());
+      lista.push(buf.lines().nth(nline).unwrap().to_string());
+      if nb_result == 3{
+        break;
+      }
     }
     nline += 1;
   }
+  println!();
+  println!();
+  for element in &lista {
+    println!("{}", element);
+}
 
-  let mut prime = "";
-  if nline != buf.lines().count() && nline != 0{
-    prime = buf.lines().nth(nline).unwrap();
-  }
-  println!("{}", prime);
+  // Sending to FrontEnd
+  // let mut prime = "";
+  // if nline != buf.lines().count() && nline != 0{
+  //   prime = buf.lines().nth(nline).unwrap();
+  // }
+  // println!("{}", prime);
 
-  prime.into()
+  lista.into()
 
 }
