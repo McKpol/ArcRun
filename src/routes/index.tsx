@@ -16,11 +16,11 @@ export default component$(() => {
   await appWindow.setPosition(new LogicalPosition(x, y));
 
     appWindow.setFocus();
-  //   await appWindow.onFocusChanged(async () => {
-  //     if (!(await appWindow.isFocused())){
-  //       appWindow.close();
-  //     }
-  // })
+    await appWindow.onFocusChanged(async () => {
+      if (!(await appWindow.isFocused())){
+        appWindow.close();
+      }
+  })
 
   inputElement?.addEventListener("input", async function() {
     await appWindow.setPosition(new LogicalPosition(x, y));
