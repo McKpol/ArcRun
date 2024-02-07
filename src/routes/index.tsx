@@ -53,12 +53,12 @@ export default component$(() => {
       await appWindow.setSize(new LogicalSize(825, 600));
       y = window.screen.height / 2 /* 2 */ - window.innerHeight / 2;
 
-  // Delete all ProgramDiv
+  // Delete all 'cloneDiv'
       for (let i = 0; clone_list.length > i; i++){
         clone_list[i].remove();
       }
 
-  // Separation of searchNumber and ProgramName
+  // Separation of 'searchNumber', 'searchType' and 'programName'
       const searchType: string[] = [];
       const searchNumber: string[] = [];
       const searchName: string[] = [];
@@ -75,12 +75,12 @@ export default component$(() => {
 
       console.log(searchName);
 
-  // Cloning and filling searchName the ProgramDiv and DirDiv
+  // Cloning and filling 'searchName' the 'programDiv' and 'dirDiv'
       for (let i = 0; message.length / 2 > i; i++){
         const name: any = searchName[i];
         
         if (name !== undefined){
-        // ProgramDiv
+        // 'programDiv'
           console.log(name);
           if (searchType[i] == "0"){
             const clonepro = programDiv.cloneNode(true) as HTMLElement;
@@ -91,7 +91,7 @@ export default component$(() => {
             programDiv.parentNode!.insertBefore(clonepro, programDiv.nextSibling);
           }
           if (searchType[i] == "1"){
-            // DirDiv
+            // 'dirDiv'
             const clonedir = dirDiv.cloneNode(true) as HTMLElement;
             clonedir.id = i.toString();
             clonedir.children[1].children[0].textContent = name.toString();
