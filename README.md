@@ -13,7 +13,9 @@ App is on early development, now it only looks nice.
 3. Use ```npm run tauri build``` for building app (for windows installer is in src-tauri/target/release/bundle /msi or /nsis) more info on https://tauri.app/v1/guides/building
 
 ## Developers
+
 McKpl - Main Developer
+
 xKotelek - Front-end Helper
 
 ## Project Structure
