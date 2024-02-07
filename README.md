@@ -1,5 +1,5 @@
 
-# ArcRun by McKpl and xKotelek
+# ArcRun by McKpl
 ArcRun is clone of spotlight search from macos and powertoys from windows, but better.
 We are using Tauri and Qwik to build this WebApp.
 App is on early development, now it only looks nice.
@@ -11,6 +11,10 @@ App is on early development, now it only looks nice.
 2. Use ```npm i``` to install node modules
 2. Use ```npm run tauri dev``` for visible changes
 3. Use ```npm run tauri build``` for building app (for windows installer is in src-tauri/target/release/bundle /msi or /nsis) more info on https://tauri.app/v1/guides/building
+
+## Developers
+McKpl - Main Developer
+xKotelek - Front-end Helper
 
 ## Project Structure
 
