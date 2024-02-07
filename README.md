@@ -35,3 +35,15 @@ xKotelek - Front-end Helper
 - `src/components`: Recommended directory for components.
 
 - `public`: Any static assets, like images, can be placed in the public directory. Please see the [Vite public directory](https://vitejs.dev/guide/assets.html#the-public-directory) for more info.
+
+## License
+
+### MIT
+
+renovate[bot] - https://github.com/tauri-apps/plugins-workspace/tree/v1/plugins/single-instance
+
+Jackhenry Design - https://www.svgrepo.com/svg/453347/folder
+
+### CC Attribution
+
+krystonschwarze - https://www.svgrepo.com/svg/511219/window-code-block
