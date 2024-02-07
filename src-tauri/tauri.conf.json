@@ -68,7 +68,7 @@
         "width": 800,
         "transparent": true,
         "center": true,
-        "alwaysOnTop": false,
+        "alwaysOnTop": true,
         "skipTaskbar": true
       }
     ]

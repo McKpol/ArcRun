@@ -3,9 +3,12 @@ import type { DocumentHead } from "@builder.io/qwik-city";
 import { Image } from '@unpic/qwik';
 import { appWindow, LogicalPosition, LogicalSize } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api";
+import { register, unregisterAll } from '@tauri-apps/api/globalShortcut';
 
 export default component$(() => {
   useVisibleTask$(async () => {
+  
+    await unregisterAll();
 
   // Change Size
   await appWindow.setSize(new LogicalSize(825, 90));
@@ -22,15 +25,40 @@ export default component$(() => {
   const dirDiv = document.getElementById("dirMain")!;
   const clone_list: HTMLElement[] = [];
 
-  // Set Focus, Close when unfocused 
-    appWindow.setFocus();
-    await inputElement?.focus();
+  // Shortcut Alt + Space
+  await register('Alt+Space', async () => {
+    // Checking if window is not focused
+    if (!(await appWindow.isFocused ())){
+      
+      console.log('Showing window');
+
+      // Setting the value of input
+      document.getElementsByTagName("input")[0].value = "";
+
+      // Researching programs and files
+      inputElement?.dispatchEvent(new InputEvent('input', {
+        bubbles: true,
+        cancelable: false
+      }));
+
+      // Show
+      await appWindow.setFocus();
+      await inputElement?.focus();
+      await appWindow.show();
+    }
+  }); 
+
+  // Hide when unfocused (set focus have purpuse when clicking alt + space)
     await appWindow.onFocusChanged(async () => {
-      if (!(await appWindow.isFocused())){
-        appWindow.close();
+      if (!(await appWindow.isFocused ())){
+        await appWindow.setFocus();
+        await inputElement?.focus();
+        await appWindow.hide();
       }
   })
-
+  // Hide app when opening
+  await appWindow.hide();
+  
   // When typing do...
   inputElement?.addEventListener("input", async function() {
 

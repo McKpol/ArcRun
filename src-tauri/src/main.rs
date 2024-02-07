@@ -1,11 +1,11 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use tauri::Manager;
 use std::{fs::{self, OpenOptions, File}, io::{Write, Read}};
 use walkdir::WalkDir;
 use whoami;
 use std::path::Path;
-
 
 fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
   // Data
@@ -52,6 +52,12 @@ fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
   Ok(())
 }
 
+#[derive(Clone, serde::Serialize)]
+struct Payload {
+  args: Vec<String>,
+  cwd: String,
+}
+
 fn main() {
   println!("Script started");
   
@@ -59,11 +65,18 @@ fn main() {
     Ok(_) => println!("Cashed program list"),
     Err(_) => println!("Cannot cached program list")
   }
+
   tauri::Builder::default()
+  .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+      println!("{}, {argv:?}, {cwd}", app.package_info().name);
+
+      app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
+  }))
     .invoke_handler(tauri::generate_handler![search])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
+
 
 #[tauri::command]
 fn search(search: String) -> Vec<String> {
