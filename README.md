@@ -36,7 +36,7 @@ xKotelek - Front-end Helper
 
 - `public`: Any static assets, like images, can be placed in the public directory. Please see the [Vite public directory](https://vitejs.dev/guide/assets.html#the-public-directory) for more info.
 
-## License
+## Assets license
 
 ### MIT
 
@@ -47,3 +47,8 @@ Jackhenry Design - https://www.svgrepo.com/svg/453347/folder
 ### CC Attribution
 
 krystonschwarze - https://www.svgrepo.com/svg/511219/window-code-block
+
+## License
+MIT License
+
+Copyright (c) 2024 McKpol
