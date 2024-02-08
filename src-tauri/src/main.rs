@@ -2,10 +2,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::Manager;
-use std::{fs::{self, OpenOptions, File}, io::{Write, Read}};
+use std::{fs::{self, File, OpenOptions}, io::{Read, Write}};
 use walkdir::WalkDir;
 use whoami;
 use std::path::Path;
+use std::path::PathBuf;
 
 fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
   // Data
@@ -72,11 +73,48 @@ fn main() {
 
       app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
   }))
-    .invoke_handler(tauri::generate_handler![search])
+    .invoke_handler(tauri::generate_handler![search, open])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
 
+
+#[tauri::command]
+fn open(number: String, whattype: String){
+  // Data
+  let user_name = whoami::username();
+  let path_file = format!("C:/Users/{}/AppData/Roaming/arcrun/", user_name);
+
+  // Program
+  if whattype == "0".to_string(){
+    // Data
+    let chpro_file = format!("{}/chpro", path_file);
+    let mut file_ = File::open(chpro_file).unwrap();
+    let mut buf = String::new();
+    file_.read_to_string(&mut buf).unwrap();
+    
+    // Run program
+    match open_with::open(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
+      Ok(()) => print!(""),
+      Err(e) => println!("{}", e),
+    }
+  
+  // Dir
+  } else if whattype == "1".to_string() {
+
+    let chdir_file = format!("{}/chdir", path_file);
+    let mut dir_ = File::open(chdir_file).unwrap();
+    let mut buf = String::new();
+    dir_.read_to_string(&mut buf).unwrap();
+    
+    // Open directory
+    match open_with::open(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
+      Ok(()) => print!(""),
+      Err(e) => println!("{}", e),
+    }
+    println!("start {}", buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string());
+  }
+}
 
 #[tauri::command]
 fn search(search: String) -> Vec<String> {

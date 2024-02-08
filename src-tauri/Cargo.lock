@@ -67,6 +67,7 @@ name = "app"
 version = "0.1.0"
 dependencies = [
  "global-hotkey",
+ "open_with",
  "serde",
  "serde_json",
  "tauri",
@@ -783,6 +784,17 @@ dependencies = [
  "darling_core",
  "quote",
  "syn 2.0.48",
+]
+
+[[package]]
+name = "dbus"
+version = "0.9.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1bb21987b9fb1613058ba3843121dd18b163b254d8a6e797e144cbac14d96d1b"
+dependencies = [
+ "libc",
+ "libdbus-sys",
+ "winapi",
 ]
 
 [[package]]
@@ -1922,6 +1934,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13e3bf6590cbc649f4d1a3eefc9d5d6eb746f5200ffb04e5e142700b8faa56e7"
 
 [[package]]
+name = "libdbus-sys"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06085512b750d640299b79be4bad3d2fa90a9c00b1fd9e1b46364f66f0485c72"
+dependencies = [
+ "pkg-config",
+]
+
+[[package]]
 name = "libredox"
 version = "0.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2311,6 +2332,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "open_with"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "091a41fc59b93a49684618bdd941095ea505aed587122fdb5fc89cf5e7a23c50"
+dependencies = [
+ "dbus",
+ "osascript",
+ "winapi",
+]
+
+[[package]]
 name = "openssl"
 version = "0.10.62"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2383,6 +2415,17 @@ checksum = "57119c3b893986491ec9aa85056780d3a0f3cf4da7cc09dd3650dbd6c6738fb9"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "osascript"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38731fa859ef679f1aec66ca9562165926b442f298467f76f5990f431efe87dc"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "serde_json",
 ]
 
 [[package]]
