@@ -2,13 +2,18 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::Manager;
+use std::sync::Mutex;
 use std::{fs::{self, File, OpenOptions}, io::{Read, Write}};
 use walkdir::WalkDir;
 use whoami;
 use std::path::Path;
 use std::path::PathBuf;
-use tauri::{CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem, SystemTray};
+use tauri::{CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem, SystemTray, SystemTrayHandle};
 use tauri::SystemTrayEvent;
+use tauri_plugin_autostart::MacosLauncher;
+use std::env;
+use auto_launch::AutoLaunchBuilder;
+
 
 fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
   // Data
@@ -19,7 +24,7 @@ fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
   let chprocut_file = format!("{}/chprocut", path_file);
   let chdircut_file = format!("{}/chdircut", path_file);
   let chdir_file = format!("{}/chdir", path_file);
-  
+
   // Creating dir and file
   fs::create_dir_all(path_file)?;
   let mut file = OpenOptions::new().read(true).write(true).create(true).append(true).open(chpro_file.clone())?;
@@ -55,42 +60,114 @@ fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
   Ok(())
 }
 
+fn SetAutoStart(){
+  match env::current_exe() {
+    Ok(exe_path) => {
+      let auto = AutoLaunchBuilder::new()
+      .set_app_name("the-app")
+      .set_app_path(exe_path.display().to_string().as_str())
+      .set_use_launch_agent(true)
+      .build()
+      .unwrap();
+    
+      if auto.is_enabled().unwrap() {
+        println!("disabling");
+        auto.disable().unwrap();
+      } else {
+        println!("enabling");
+        auto.enable().unwrap();
+      }
+    },
+    Err(e) => {
+
+    },
+};
+
+}
+
 #[derive(Clone, serde::Serialize)]
 struct Payload {
   args: Vec<String>,
   cwd: String,
 }
 
+enum TrayState {
+  False,
+  True,
+}
+
 fn main() {
   println!("Script started");
-  
+
   match cache_programs(){
     Ok(_) => println!("Cashed program list"),
     Err(_) => println!("Cannot cached program list")
   }
 
+  let startup = CustomMenuItem::new("startup".to_string(), "Run on startup");
   let quit = CustomMenuItem::new("quit".to_string(), "Quit");
+
   let tray_menu = SystemTrayMenu::new()
+  .add_item(startup)
   .add_item(quit);
 
   let tray = SystemTray::new().with_menu(tray_menu);
 
   tauri::Builder::default()
+  .setup(|app|{
+    app.manage(Mutex::new(TrayState::False));
+    Ok(())
+  })
   .system_tray(tray)
   .on_system_tray_event(|app, event| match event {
+    SystemTrayEvent::LeftClick {
+      position: _,
+      size: _,
+      ..
+    } => {
+      let main_window = app.get_window("main").unwrap();
+      main_window.emit("show", "nothing");
+    }
     SystemTrayEvent::MenuItemClick { id, .. } => {
+      let item_handle = app.tray_handle().get_item(&id);
       match id.as_str() {
-        "quit" => {
+          "quit" => {
           std::process::exit(0);
+        }
+        "startup" => {
+          let tray_state_mutex = app.state::<Mutex<TrayState>>();
+          let mut tray_state = tray_state_mutex.lock().unwrap();
+          match *tray_state{
+            TrayState::True => {
+              match env::current_exe() {
+                Ok(e) => {
+                  item_handle.set_selected(false);
+                  *tray_state = TrayState::False;
+                  SetAutoStart();
+                },
+                Err(e) => println!("failed to get current exe path: {e}"),
+            };
+          }
+            TrayState::False => {
+              match env::current_exe() {
+                Ok(e) => {
+                  item_handle.set_selected(true);
+                  *tray_state = TrayState::True;
+                  SetAutoStart();
+                },
+                Err(e) => println!("failed to get current exe path: {e}"),
+            };
+            },
+          };
         }
         _ => {}
       }
     }
     _ => {}
   })
+  .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![])))
   .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
       println!("{}, {argv:?}, {cwd}", app.package_info().name);
-
       app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
   }))
     .invoke_handler(tauri::generate_handler![search, open])

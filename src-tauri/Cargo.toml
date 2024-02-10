@@ -23,6 +23,8 @@ walkdir = "2.4.0"
 whoami = "1.4.1"
 global-hotkey = "0.4.2"
 open_with = "0.1.2"
+tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+auto-launch = "0.5.0"
 
 [dependencies.windows]
 version = "0.36.1"

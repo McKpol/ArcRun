@@ -4,6 +4,7 @@ import { Image } from '@unpic/qwik';
 import { appWindow, LogicalPosition, LogicalSize } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api";
 import { register, unregisterAll } from '@tauri-apps/api/globalShortcut';
+import * as tauriEvent from '@tauri-apps/api/event';
 
 export default component$(() => {
   useVisibleTask$(async () => {
@@ -30,8 +31,7 @@ export default component$(() => {
   const searchNumber: string[] = [];
   const searchName: string[] = [];
 
-  // Shortcut Alt + Space
-  await register('Alt+Space', async () => {
+  async function Showapp() {
     // Checking if window is not focused
     if (!(await appWindow.isFocused ())){
       all.style.visibility = "visible";
@@ -51,6 +51,15 @@ export default component$(() => {
       await inputElement?.focus();
       await appWindow.show();
     }
+  }
+
+  await tauriEvent.listen<string>('show', async () => {
+    await Showapp();
+  });
+
+  // Shortcut Alt + Space
+  await register('Alt+Space', async () => {
+    await Showapp();
   }); 
 
   // Hide when unfocused (set focus have purpuse when clicking alt + space)
