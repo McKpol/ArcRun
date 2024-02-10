@@ -7,6 +7,8 @@ use walkdir::WalkDir;
 use whoami;
 use std::path::Path;
 use std::path::PathBuf;
+use tauri::{CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem, SystemTray};
+use tauri::SystemTrayEvent;
 
 fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
   // Data
@@ -67,7 +69,25 @@ fn main() {
     Err(_) => println!("Cannot cached program list")
   }
 
+  let quit = CustomMenuItem::new("quit".to_string(), "Quit");
+  let tray_menu = SystemTrayMenu::new()
+  .add_item(quit);
+
+  let tray = SystemTray::new().with_menu(tray_menu);
+
   tauri::Builder::default()
+  .system_tray(tray)
+  .on_system_tray_event(|app, event| match event {
+    SystemTrayEvent::MenuItemClick { id, .. } => {
+      match id.as_str() {
+        "quit" => {
+          std::process::exit(0);
+        }
+        _ => {}
+      }
+    }
+    _ => {}
+  })
   .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
       println!("{}, {argv:?}, {cwd}", app.package_info().name);
 
