@@ -26,6 +26,10 @@ export default component$(() => {
   const dirDiv = document.getElementById("dirMain")!;
   const clone_list: HTMLElement[] = [];
   const all = document.getElementById("all")!;
+  let lenghtList = 0;
+  let programList = 0;
+  let dirList = 0;
+  let heightApp = 0;
 // Search results
   const searchType: string[] = [];
   const searchNumber: string[] = [];
@@ -85,25 +89,15 @@ export default component$(() => {
   
   // When typing do...
   inputElement?.addEventListener("input", async function() {
-
-  // Change position    
-    await appWindow.setPosition(new LogicalPosition(x, y));
   
+  programList = 0;
+  dirList = 0;
+
   // Searching
     const message: string[] = await invoke("search", {
     search: document.getElementsByTagName("input")[0].value.toLowerCase(),
   
   }); 
-
-  // Show or Hide if search content is true
-    if (message.length == 0){
-      result.style.display = "none";
-      await appWindow.setSize(new LogicalSize(825, 90));
-      y = window.screen.height / 3.8 /* 2 */ - window.innerHeight / 2;
-    } else {
-      result.style.display = "block";
-      await appWindow.setSize(new LogicalSize(825, 600));
-      y = window.screen.height / 2 /* 2 */ - window.innerHeight / 2;
 
   // Delete all 'cloneDiv'
       for (let i = 0; clone_list.length > i; i++){
@@ -121,10 +115,38 @@ export default component$(() => {
         searchType.push(message[i + 2]);
     }
 
+  // Show or Hide if search content is true
+    if (message.length == 0){
+      result.style.display = "none";
+      await appWindow.setSize(new LogicalSize(825, 92));
+      y = window.screen.height / 5;
+    } else {
+
+      if (searchName.length == 8){
+        lenghtList = 8;
+      } else {
+        lenghtList = searchName.length;
+      }
+
+      for (let i = 0; i < lenghtList; i++) {
+        if (searchType[i] == "0"){
+          programList++;
+        } else {
+          dirList++;
+        }
+      }
+
+      heightApp = 104 + 79 * programList + 54 * dirList - 4;
+      
+      result.style.display = "block";
+      await appWindow.setSize(new LogicalSize(825, heightApp));
+      y = window.screen.height / 5; 
+      
   // Reversing list
-      searchNumber.reverse();
-      searchName.reverse();
-      searchType.reverse();
+    searchNumber.reverse();
+    searchName.reverse();
+    searchType.reverse();
+
 
   // Cloning and filling 'searchName' the 'programDiv' and 'dirDiv'
       for (let i = 0; message.length / 2 > i; i++){
@@ -164,7 +186,9 @@ export default component$(() => {
 
       });
     }
-  
+    
+    // Change position    
+    await appWindow.setPosition(new LogicalPosition(x, y));
   });
 });
 
@@ -172,11 +196,11 @@ export default component$(() => {
     <>
     <div id="all" class='invisible'>
       <div id='check' class='invisible text-[0px]' />
-        <div class='bg-gray-200 absolute rounded-[20px] text-gray border-2 border-gray-300 h-[90px] w-[800px] left-1/2 -translate-x-1/2'> 
+        <div class='bg-gray-200 relative rounded-[20px] text-gray border-2 border-gray-300 h-[90px] w-[800px] left-1/2 -translate-x-1/2'> 
           <div class='flex w-full h-full'>
             <div class='ml-2 h-[98%] w-20 '>
               <Image width={47} height={47} class="opacity-100 top-1/2 -translate-y-1/2 relative left-1/2 -translate-x-1/2" src="/logosearch.png" />
-            </div>
+            </div> 
             <div class='w-full'> 
               <input id="input" placeholder="Search with ArcRun" class='font-roboto text-[40px] bg-transparent text-black px-2 h-full border-transparent w-[100%] relative top-1/2 -translate-y-1/2 focus:outline-none' />
             </div>
@@ -185,7 +209,7 @@ export default component$(() => {
             </div>
         </div>
         
-        <div id='result' class='hidden bg-white/0 h-5/6 w-full absolute bottom-0 roundedd-[20px]'>
+        <div id='result' class='hidden bg-white/0 mt-3 h-5/6 w-full relative bottom-0 roundedd-[20px]'>
         {/* div jako program */}
         <div id='programMain' class='hidden mb-1 relative shadow-lg left-1/2 -translate-x-1/2 hover:w-full transition-all duration-200 cursor-pointer rounded-[10px] w-[795px] h-[75px] bg-gray-200 overflow-hidden 
           before:duration-100 before:left-1/2 before:-translate-x-1/2 before:bg-[#2f82f7]/0 before:hover:bg-[#2f82f7] before:w-[96%] before:rounded-[9px] before:hover:w-full before:h-full before:delay-75 before:transition-all before:absolute'>
