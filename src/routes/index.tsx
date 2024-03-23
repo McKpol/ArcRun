@@ -17,7 +17,7 @@ export default component$(() => {
   // Change Position
   const x = window.screen.width / 2 - window.innerWidth / 2;
   let y = window.screen.height / 3.8 - window.innerHeight /2;
-  await appWindow.setPosition(new LogicalPosition(x, y));
+  await appWindow.setPosition(new LogicalPosition(x, y)); 
 
   // Data
   const result = document.getElementById("result")!;
@@ -26,10 +26,12 @@ export default component$(() => {
   const dirDiv = document.getElementById("dirMain")!;
   const clone_list: HTMLElement[] = [];
   const all = document.getElementById("all")!;
+  let otherAction = 0;
   let lenghtList = 0;
   let programList = 0;
   let dirList = 0;
   let heightApp = 0;
+
 // Search results
   const searchType: string[] = [];
   const searchNumber: string[] = [];
@@ -63,7 +65,8 @@ export default component$(() => {
 
   // Shortcut Alt + Space
   await register('Alt+Space', async () => {
-    await Showapp();
+    await Showapp(); 
+    Showapp(); 
   }); 
 
   // Hide when unfocused (set focus have purpuse when clicking alt + space)
@@ -158,6 +161,15 @@ export default component$(() => {
             const clonepro = programDiv.cloneNode(true) as HTMLElement;
             clonepro.id = i.toString();
             clonepro.children[1].children[0].textContent = name.toString();
+            clonepro.children[2].children[0].addEventListener('mouseenter', function() {
+              otherAction = 1;
+            });
+            clonepro.children[2].children[1].addEventListener('mouseenter', function() {
+              otherAction = 2;
+            });
+            clonepro.children[2].addEventListener('mouseleave', function() {
+              otherAction = 0;
+            });
             clonepro.style.display = "flex";
             clone_list.push(clonepro);
             programDiv.parentNode!.insertBefore(clonepro, programDiv.nextSibling);
@@ -167,6 +179,12 @@ export default component$(() => {
             const clonedir = dirDiv.cloneNode(true) as HTMLElement;
             clonedir.id = i.toString();
             clonedir.children[1].children[0].textContent = name.toString();
+            clonedir.children[2].children[0].addEventListener('mouseenter', function() {
+              otherAction = 2;
+            });
+            clonedir.children[2].addEventListener('mouseleave', function() {
+              otherAction = 0;
+            });
             clonedir.style.display = "flex";
             clone_list.push(clonedir);
             dirDiv.parentNode!.insertBefore(clonedir, dirDiv.nextSibling);
@@ -178,12 +196,12 @@ export default component$(() => {
     for (let i = 0; i <= 11; i++) {
       document.getElementById(i.toString())?.addEventListener('click', function() {
         console.log(searchNumber[i]);
-
-        invoke("open", {
-          number: searchNumber[i],
-          whattype: searchType[i]
-        }); 
-
+        
+          invoke("open", {
+            number: searchNumber[i],
+            whattype: searchType[i],
+            whataction: otherAction.toString()
+          }); 
       });
     }
     
@@ -194,7 +212,7 @@ export default component$(() => {
 
   return (
     <>
-    <div id="all" class='invisible'>
+    <div id="all" class='invisible select-none'>
       <div id='check' class='invisible text-[0px]' />
         <div class='bg-gray-200 relative rounded-[20px] text-gray border-2 border-gray-300 h-[90px] w-[800px] left-1/2 -translate-x-1/2'> 
           <div class='flex w-full h-full'>
@@ -217,7 +235,18 @@ export default component$(() => {
               <Image width={38} height={38} class="ml-1 relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/program.png" />
             </div>
             <div class='w-[93%]'>
-              <div id='program' class='relative top-1/2 -translate-y-1/2 px-2 pt-[0px] font-roboto font-normal text-[28px] truncate'></div>
+                <div id='program' class='relative top-1/2 -translate-y-1/2 px-2 pt-[0px] font-roboto font-normal text-[28px] truncate'></div>
+            </div>
+            <div class='absolute -right-6 opacity-0 duration-[175ms] hover:opacity-100 hover:right-0 flex  h-full bg-gray-200 shadow-[0_0px_10px_10px_rgba(229,231,235,1)]'>
+              <div class='px-3 hover:invert duration-150 transition-all
+               before:duration-150 before:rounded-[0px] before:hover:rounded-full before:transition-all before:top-1/2 before:translate-y-[-50%] before:left-[32px] before:translate-x-[-50%] b before:w-0 before:h-0 before:bg-[#2f64f7]/0 before:invert before:absolute before:hover:w-[70px] before:hover:h-[70px] before:hover:bg-[#2f64f7]'>
+                <Image width={40} height={40} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/openfolder.png" />
+                </div>
+              <div class='pl-3 pr-5 hover:invert duration-150 transition-all
+               before:duration-150 before:rounded-[0px] before:hover:rounded-full before:transition-all before:top-1/2 before:translate-y-[-50%] before:left-[32px] before:translate-x-[-50%] b before:w-0 before:h-0 before:bg-[#2f64f7]/0 before:invert before:absolute before:hover:w-[70px] before:hover:h-[70px] before:hover:bg-[#2f64f7]'>
+                <Image width={40} height={40} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/moreabout.png" />
+                </div>
+              
             </div>
 
           </div>
@@ -231,7 +260,12 @@ export default component$(() => {
             <div class='w-[93%]'>
               <div class='relative top-1/2 -translate-y-1/2 px-2 pt-[1px] font-roboto font-normal text-[24px] truncate'></div>
             </div>
-
+            <div class='absolute flex -right-6 opacity-0 duration-[175ms] hover:opacity-100 hover:right-0 h-full bg-gray-200  shadow-[0_0px_10px_10px_rgba(229,231,235,1)]'>
+              <div class='px-[16px] hover:invert duration-150 transition-all
+               before:duration-150 before:rounded-[0px] before:hover:rounded-full before:transition-all before:top-1/2 before:translate-y-[-50%] before:left-[32px] before:translate-x-[-50%] b before:w-0 before:h-0 before:bg-[#2f64f7]/0 before:invert before:absolute before:hover:w-[52px] before:hover:h-[52px] before:hover:bg-[#2f64f7]'>
+                <Image width={32} height={32} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/moreabout.png" />
+                </div>
+            </div>
           </div>
         </div>
       </div>

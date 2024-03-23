@@ -232,7 +232,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 
 #[tauri::command]
-fn open(number: String, whattype: String){
+fn open(number: String, whattype: String, whataction: String){
   // Data
   let user_name = whoami::username();
   let path_file = format!("C:/Users/{}/AppData/Roaming/arcrun/", user_name);
@@ -246,10 +246,23 @@ fn open(number: String, whattype: String){
     file_.read_to_string(&mut buf).unwrap();
     
     // Run program
-    match open_with::open(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
-      Ok(()) => print!(""),
-      Err(e) => println!("{}", e),
+    if whataction == "1"{
+      match open_with::show_in_folder(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
+        Ok(()) => print!(""),
+        Err(e) => println!("{}", e),
+      }
+    } else if whataction == "2"{
+      match open_with::show_properties(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
+        Ok(()) => print!(""),
+        Err(e) => println!("{}", e),
+      }
+    } else if whataction == "0"{
+      match open_with::open(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
+        Ok(()) => print!(""),
+        Err(e) => println!("{}", e),
+      }
     }
+
   
   // Dir
   } else if whattype == "1".to_string() {
@@ -260,11 +273,17 @@ fn open(number: String, whattype: String){
     dir_.read_to_string(&mut buf).unwrap();
     
     // Open directory
-    match open_with::open(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
-      Ok(()) => print!(""),
-      Err(e) => println!("{}", e),
+    if whataction == "0"{
+      match open_with::open(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
+        Ok(()) => print!(""),
+        Err(e) => println!("{}", e),
+      }
+    } else if whataction == "2" {
+      match open_with::show_properties(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
+        Ok(()) => print!(""),
+        Err(e) => println!("{}", e),
+      }
     }
-    println!("start {}", buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string());
   }
 }
 
