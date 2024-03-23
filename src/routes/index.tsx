@@ -31,11 +31,78 @@ export default component$(() => {
   let programList = 0;
   let dirList = 0;
   let heightApp = 0;
+  let selected = -1;
 
 // Search results
   const searchType: string[] = [];
   const searchNumber: string[] = [];
   const searchName: string[] = [];
+
+  function Changehover(numberofdiv: number, selected: number, nonanimation: boolean = false){
+    let divElement;
+    for (let i = 0; i < numberofdiv; i++){
+      divElement = document.getElementById(i.toString())!;
+      if (divElement.classList.contains("hovered-result") || divElement.classList.contains("non-animation")){
+        divElement.classList.remove("hovered-result");
+        divElement.classList.remove("non-animation");
+        divElement.classList.add("unhovered-result");
+      }
+    }
+    if (!(selected == -1)){
+      divElement = document.getElementById(selected.toString())!;
+      divElement.classList.remove("unhovered-result");
+      if (nonanimation){
+        divElement.classList.add("non-animation");
+      } else {
+        divElement.classList.add("hovered-result");
+      }
+      
+  }
+}
+
+
+document.addEventListener('wheel', (event) => {
+  if (Math.sign(event.deltaY) == -1){
+    if (!(selected == -1)){
+      if (selected + 1 < searchName.length){
+        selected++;
+        Changehover(searchName.length, selected);
+      }
+  }
+  } else if (Math.sign(event.deltaY) == 1) {
+    if (!(selected == -1)){
+      if (selected - 1 > -1){
+      selected--;
+      Changehover(searchName.length, selected);
+    }
+  } else {
+      selected = searchName.length - 1;
+      Changehover(searchName.length, selected);
+  }
+  }
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key == 'ArrowUp') {
+    if (!(selected == -1)){
+      if (selected + 1 < searchName.length){
+        selected++;
+        Changehover(searchName.length, selected);
+      }
+  }
+}
+  if (event.key == 'ArrowDown') {
+    if (!(selected == -1)){
+      if (selected - 1 > -1){
+      selected--;
+      Changehover(searchName.length, selected);
+    }
+  } else {
+      selected = searchName.length - 1;
+      Changehover(searchName.length, selected);
+  }
+}
+}); 
 
   async function Showapp() {
     // Checking if window is not focused
@@ -79,7 +146,15 @@ export default component$(() => {
   document.addEventListener('keydown', async (event) => {
     if (event.key == 'Escape') {
       await Hideapp();
-  }}); 
+  }
+  if (event.key == 'Enter'){
+    invoke("open", {
+      number: searchNumber[selected],
+      whattype: searchType[selected],
+      whataction: otherAction.toString()
+    });
+  }
+}); 
 
   await appWindow.onFocusChanged(async () => {
     if (!(await appWindow.isFocused ())){
@@ -193,18 +268,30 @@ export default component$(() => {
       }
     }
 
-    for (let i = 0; i <= 11; i++) {
-      document.getElementById(i.toString())?.addEventListener('click', function() {
+    for (let i = 0; i <= searchName.length - 1; i++) {
+      const divElement = document.getElementById(`${i}`)!;
+      divElement.addEventListener('click', function() {
         console.log(searchNumber[i]);
         
           invoke("open", {
             number: searchNumber[i],
             whattype: searchType[i],
             whataction: otherAction.toString()
-          }); 
+          });
+      });
+      divElement.addEventListener('mouseenter', function() {
+        selected = i;
+        Changehover(searchName.length, selected);
+      });
+      divElement.addEventListener('mouseleave', function() {
+        selected = -1;
+        Changehover(searchName.length, selected);
       });
     }
     
+    selected = searchName.length - 1;
+    Changehover(searchName.length, selected, true);
+
     // Change position    
     await appWindow.setPosition(new LogicalPosition(x, y));
   });
@@ -220,7 +307,7 @@ export default component$(() => {
               <Image width={47} height={47} class="opacity-100 top-1/2 -translate-y-1/2 relative left-1/2 -translate-x-1/2" src="/logosearch.png" />
             </div> 
             <div class='w-full'> 
-              <input id="input" placeholder="Search with ArcRun" class='font-roboto text-[40px] bg-transparent text-black px-2 h-full border-transparent w-[100%] relative top-1/2 -translate-y-1/2 focus:outline-none' />
+              <input id="input" placeholder="Search with ArcRun" autocomplete="off" class='font-roboto text-[40px] bg-transparent text-black px-2 h-full border-transparent w-[100%] relative top-1/2 -translate-y-1/2 focus:outline-none' />
             </div>
               <div class='bg-gradient-to-r from-transparent via-gray-200/70 to-gray-200 absolute w-12 h-full right-0 mr-5' />
               <div class='w-4' />
@@ -229,10 +316,10 @@ export default component$(() => {
         
         <div id='result' class='hidden bg-white/0 mt-3 h-5/6 w-full relative bottom-0 roundedd-[20px]'>
         {/* div jako program */}
-        <div id='programMain' class='hidden mb-1 relative shadow-lg left-1/2 -translate-x-1/2 hover:w-full transition-all duration-200 cursor-pointer rounded-[10px] w-[795px] h-[75px] bg-gray-200 overflow-hidden 
-          before:duration-100 before:left-1/2 before:-translate-x-1/2 before:bg-[#2f82f7]/0 before:hover:bg-[#2f82f7] before:w-[96%] before:rounded-[9px] before:hover:w-full before:h-full before:delay-75 before:transition-all before:absolute'>
+        <div id='programMain' class='hidden mb-1 relative shadow-lg left-1/2 -translate-x-1/2 transition-all duration-200 cursor-pointer rounded-[10px] w-[795px] h-[75px] bg-gray-200 overflow-hidden
+          before:duration-100 before:left-1/2 before:-translate-x-1/2 before:rounded-[9px] before:h-full before:delay-75 before:transition-all before:absolute'>
             <div class='h-[98%] w-14'>
-              <Image width={38} height={38} class="ml-1 relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/program.png" />
+              <Image width={38} height={38} class="ml-1 relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/program.png" /> 
             </div>
             <div class='w-[93%]'>
                 <div id='program' class='relative top-1/2 -translate-y-1/2 px-2 pt-[0px] font-roboto font-normal text-[28px] truncate'></div>
@@ -252,8 +339,8 @@ export default component$(() => {
           </div>
           
           {/* div jako folder */}
-          <div id='dirMain' class='hidden mb-1 relative shadow-lg left-1/2 -translate-x-1/2 hover:w-full transition-all duration-200 cursor-pointer rounded-[10px] w-[795px] h-[50px] bg-gray-200 overflow-hidden 
-          before:duration-100 before:left-1/2 before:-translate-x-1/2 before:bg-[#2f82f7]/0 before:hover:bg-[#2f82f7] before:w-[96%] before:rounded-[9px] before:hover:w-full before:h-full before:delay-75 before:transition-all before:absolute'>
+          <div id='dirMain' class='hidden mb-1 relative shadow-lg left-1/2 -translate-x-1/2 transition-all duration-200 cursor-pointer rounded-[10px] w-[795px] h-[50px] bg-gray-200 overflow-hidden 
+          before:duration-100 before:left-1/2 before:-translate-x-1/2 before:rounded-[9px] before:hover:w-full before:h-full before:delay-75 before:transition-all before:absolute'>
             <div class='h-[98%] w-14'>
               <Image width={30} height={30} class="ml-1 relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/folder.png" />
             </div>

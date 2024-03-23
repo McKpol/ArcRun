@@ -62,3 +62,44 @@ body {
   background: transparent;
   overflow: hidden;
 }
+
+.hovered-result {
+  width: 100%;
+}
+
+@keyframes enter{
+    0%{
+      width: 96%;
+      background-color: #2f82f700;
+    }
+    100%{
+      width: 100%;
+      background-color: #2f82f7;
+    }
+}
+
+.hovered-result::before {
+  animation-name: enter;
+  animation-delay: 75ms;
+  animation-duration: 100ms;
+  width: 100%;
+  background-color: #2f82f7;
+}
+
+.unhovered-result::before {
+  animation-name: enter;
+  animation-delay: 75ms;
+  animation-duration: 100ms;
+  animation-direction: reverse;
+  width: 96%;
+  background-color: #2f82f700;
+}
+
+.non-animation::before {
+  width: 100%;
+  background-color: #2f82f7;
+}
+
+.non-animation {
+  width: 100%;
+}
