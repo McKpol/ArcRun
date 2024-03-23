@@ -46,9 +46,12 @@ Jackhenry Design - https://www.svgrepo.com/svg/453347/folder
 
 ### CC Attribution
 
-krystonschwarze 
+krystonschwarze
+
 https://www.svgrepo.com/svg/511219/window-code-block 
+
 https://www.svgrepo.com/svg/511031/info
+
 https://www.svgrepo.com/svg/510998/folder
 
 ## License
