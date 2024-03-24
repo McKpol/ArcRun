@@ -10,7 +10,7 @@ export default component$(() => {
   useVisibleTask$(async () => {
   
     await unregisterAll();
-
+  
   // Change Size
   await appWindow.setSize(new LogicalSize(825, 90));
   
@@ -32,6 +32,8 @@ export default component$(() => {
   let dirList = 0;
   let heightApp = 0;
   let selected = -1;
+  let alreadySearching = false;
+  let block = false;
 
 // Search results
   const searchType: string[] = [];
@@ -104,9 +106,11 @@ document.addEventListener('keydown', (event) => {
 }
 }); 
 
-  async function Showapp() {
+  async function Showapp(first: boolean = false) {
     // Checking if window is not focused
+    if (!block){
     if (!(await appWindow.isFocused ())){
+      if (!(first)){
       all.style.visibility = "visible";
       console.log('Showing window');
 
@@ -118,29 +122,62 @@ document.addEventListener('keydown', (event) => {
         bubbles: true,
         cancelable: false
       }));
+    }
+    
 
       // Show
       await appWindow.setFocus();
       await inputElement?.focus();
       await appWindow.show();
+      if (first){
+        await appWindow.hide();
+      }
     }
   }
+  }
+
+    // repair bug
+    await Showapp(true);
 
   await tauriEvent.listen<string>('show', async () => {
     await Showapp();
   });
 
-  // Shortcut Alt + Space
-  await register('Alt+Space', async () => {
-    await Showapp(); 
-    Showapp(); 
-  }); 
+  RegisterHotKey();
+  async function RegisterHotKey() {
+    try{
+    await register('Alt+Space', async () => {
+      await Showapp(); 
+      block = false;
+    }); 
+    } catch (error) {
+    console.error(error)
+    await unregisterAll();
+    block = true;
+    const message = await invoke("cant_set_hotkey");
+    if ( !(message) ) {
+      block = false;
+    } else {
+      RegisterHotKey();
+    }
+    }
+    }
+
+
 
   // Hide when unfocused (set focus have purpuse when clicking alt + space)
   async function Hideapp() {
         await appWindow.setFocus();
         await inputElement?.focus();
         await appWindow.hide();
+  }
+
+  function OpeningAnimation(){
+    const divElement = document.getElementById(`${selected}`)!;
+    divElement.children[0].classList.add("AnimtionOpening"); 
+    const image = divElement.children[0].children[0] as HTMLImageElement;
+    image.src = 'spinner.png';
+    Changehover(searchName.length, -1);
   }
 
   document.addEventListener('keydown', async (event) => {
@@ -153,6 +190,7 @@ document.addEventListener('keydown', (event) => {
       whattype: searchType[selected],
       whataction: otherAction.toString()
     });
+    OpeningAnimation();
   }
 }); 
 
@@ -167,7 +205,8 @@ document.addEventListener('keydown', (event) => {
   
   // When typing do...
   inputElement?.addEventListener("input", async function() {
-  
+  if (alreadySearching == true) {return;}
+  alreadySearching = true;
   programList = 0;
   dirList = 0;
 
@@ -267,17 +306,18 @@ document.addEventListener('keydown', (event) => {
         }
       }
     }
-
+    
     for (let i = 0; i <= searchName.length - 1; i++) {
       const divElement = document.getElementById(`${i}`)!;
       divElement.addEventListener('click', function() {
         console.log(searchNumber[i]);
-        
+        selected = i;
           invoke("open", {
             number: searchNumber[i],
             whattype: searchType[i],
             whataction: otherAction.toString()
           });
+          OpeningAnimation();
       });
       divElement.addEventListener('mouseenter', function() {
         selected = i;
@@ -294,6 +334,7 @@ document.addEventListener('keydown', (event) => {
 
     // Change position    
     await appWindow.setPosition(new LogicalPosition(x, y));
+    alreadySearching = false;
   });
 });
 
@@ -318,13 +359,13 @@ document.addEventListener('keydown', (event) => {
         {/* div jako program */}
         <div id='programMain' class='hidden mb-1 relative shadow-lg left-1/2 -translate-x-1/2 transition-all duration-200 cursor-pointer rounded-[10px] w-[795px] h-[75px] bg-gray-200 overflow-hidden
           before:duration-100 before:left-1/2 before:-translate-x-1/2 before:rounded-[9px] before:h-full before:delay-75 before:transition-all before:absolute'>
-            <div class='h-[98%] w-14'>
-              <Image width={38} height={38} class="ml-1 relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/program.png" /> 
+            <div class='ml-1 h-[98%] w-14'>
+              <Image width={38} height={38} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/program.png" /> 
             </div>
             <div class='w-[93%]'>
-                <div id='program' class='relative top-1/2 -translate-y-1/2 px-2 pt-[0px] font-roboto font-normal text-[28px] truncate'></div>
+                <div id='program' class='relative top-1/2 -translate-y-1/2 pl-1 pr-2 pt-[0px] font-roboto font-normal text-[28px] truncate'></div>
             </div>
-            <div class='absolute -right-6 opacity-0 duration-[175ms] hover:opacity-100 hover:right-0 flex  h-full bg-gray-200 shadow-[0_0px_10px_10px_rgba(229,231,235,1)]'>
+            <div class='absolute -right-6 opacity-0 duration-[175ms] hover:opacity-100 hover:right-0 flex  h-full bg-gray-200 shadow-[0_0px_10px_10px_rgba(229,231,235,1)] z-20'>
               <div class='px-3 hover:invert duration-150 transition-all
                before:duration-150 before:rounded-[0px] before:hover:rounded-full before:transition-all before:top-1/2 before:translate-y-[-50%] before:left-[32px] before:translate-x-[-50%] b before:w-0 before:h-0 before:bg-[#2f64f7]/0 before:invert before:absolute before:hover:w-[70px] before:hover:h-[70px] before:hover:bg-[#2f64f7]'>
                 <Image width={40} height={40} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/openfolder.png" />
@@ -333,9 +374,10 @@ document.addEventListener('keydown', (event) => {
                before:duration-150 before:rounded-[0px] before:hover:rounded-full before:transition-all before:top-1/2 before:translate-y-[-50%] before:left-[32px] before:translate-x-[-50%] b before:w-0 before:h-0 before:bg-[#2f64f7]/0 before:invert before:absolute before:hover:w-[70px] before:hover:h-[70px] before:hover:bg-[#2f64f7]'>
                 <Image width={40} height={40} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/moreabout.png" />
                 </div>
-              
             </div>
-
+            <div class="absolute right-0 h-full w-16 z-10">
+              <Image width={36} height={36} class="relative top-1/2 left-0 -translate-y-1/2" src="/arrow2.png" />
+            </div>
           </div>
           
           {/* div jako folder */}
@@ -347,11 +389,14 @@ document.addEventListener('keydown', (event) => {
             <div class='w-[93%]'>
               <div class='relative top-1/2 -translate-y-1/2 px-2 pt-[1px] font-roboto font-normal text-[24px] truncate'></div>
             </div>
-            <div class='absolute flex -right-6 opacity-0 duration-[175ms] hover:opacity-100 hover:right-0 h-full bg-gray-200  shadow-[0_0px_10px_10px_rgba(229,231,235,1)]'>
+            <div class='absolute flex -right-6 opacity-0 duration-[175ms] hover:opacity-100 hover:right-0 h-full bg-gray-200  shadow-[0_0px_10px_10px_rgba(229,231,235,1)] z-20'>
               <div class='px-[16px] hover:invert duration-150 transition-all
                before:duration-150 before:rounded-[0px] before:hover:rounded-full before:transition-all before:top-1/2 before:translate-y-[-50%] before:left-[32px] before:translate-x-[-50%] b before:w-0 before:h-0 before:bg-[#2f64f7]/0 before:invert before:absolute before:hover:w-[52px] before:hover:h-[52px] before:hover:bg-[#2f64f7]'>
                 <Image width={32} height={32} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/moreabout.png" />
                 </div>
+            </div>
+            <div class="absolute right-0 h-full w-16 z-10">
+              <Image width={28} height={28} class="relative top-1/2 left-0 -translate-y-1/2" src="/arrow2.png" />
             </div>
           </div>
         </div>

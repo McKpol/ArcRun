@@ -14,6 +14,7 @@ use tauri_plugin_autostart::MacosLauncher;
 use std::env;
 use auto_launch::AutoLaunchBuilder;
 use tauri::AppHandle;
+use native_dialog::{MessageDialog, MessageType};
 
 
 fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
@@ -224,12 +225,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
       println!("{}, {argv:?}, {cwd}", app.package_info().name);
       app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
   }))
-    .invoke_handler(tauri::generate_handler![search, open])
+    .invoke_handler(tauri::generate_handler![search, open, cant_set_hotkey])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
   Ok(())
 }
 
+#[tauri::command]
+fn cant_set_hotkey() -> bool{
+  let yes = MessageDialog::new()
+    .set_type(MessageType::Warning)
+    .set_title("ArcRun - HotKey error")
+    .set_text("Some app is already using Alt + Space hotkey! Do you want to try again?")
+    .show_confirm()
+    .unwrap();
+
+  yes
+  }
 
 #[tauri::command]
 fn open(number: String, whattype: String, whataction: String){
