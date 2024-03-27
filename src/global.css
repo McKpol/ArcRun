@@ -65,6 +65,9 @@ body {
 
 .hovered-result {
   width: 100%;
+  margin-top: -0.05rem;
+  margin-bottom: 0.3rem;
+  box-shadow: 0 1px 3px #000000ee;
 }
 
 @keyframes enter{
@@ -102,6 +105,9 @@ body {
 
 .non-animation {
   width: 100%;
+  margin-top: -0.05rem;
+  margin-bottom: 0.3rem;
+  box-shadow: 0 1px 3px #000000ee;
 }
 
 @keyframes spin {
@@ -112,4 +118,26 @@ body {
 
 .AnimtionOpening{
   animation: spin 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.90) infinite;
+}
+
+@keyframes show {
+  0%{
+    transform: translate(0px, -120%);
+    opacity: 5%;
+    filter: blur(5px);
+  }
+  100%{
+    transform: translate(0px, 0%);
+    opacity: 100%;
+    filter: blur(0px);
+  }
+}
+
+.AnimationShow{
+  animation: show .35s cubic-bezier(0.22, 1, 0.36, 1) normal;
+  
+}
+
+.ResetShow{
+  transform: translate(0px, -100%);
 }

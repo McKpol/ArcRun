@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "arcrun",
-    "version": "0.0.3"
+    "version": "0.0.4"
   },
   "tauri": {
     "systemTray": {
@@ -66,10 +66,10 @@
       {
         "decorations": false,
         "fullscreen": false,
-        "height": 92,
+        "height": 1,
         "resizable": false,
         "title": "ArcRun Beta",
-        "width": 800,
+        "width": 1,
         "transparent": true,
         "center": true,
         "alwaysOnTop": true,

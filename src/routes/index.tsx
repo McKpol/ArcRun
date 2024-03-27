@@ -16,7 +16,7 @@ export default component$(() => {
   
   // Change Position
   const x = window.screen.width / 2 - window.innerWidth / 2;
-  let y = window.screen.height / 3.8 - window.innerHeight /2;
+  let y = window.screen.height / 2 - window.innerHeight /2;
   await appWindow.setPosition(new LogicalPosition(x, y)); 
 
   // Data
@@ -39,6 +39,12 @@ export default component$(() => {
   const searchType: string[] = [];
   const searchNumber: string[] = [];
   const searchName: string[] = [];
+
+inputElement?.addEventListener('keydown', function(event) {
+    if ([38, 40].includes(event.keyCode)) {
+        event.preventDefault();
+    }
+});
 
   function Changehover(numberofdiv: number, selected: number, nonanimation: boolean = false){
     let divElement;
@@ -124,7 +130,8 @@ document.addEventListener('keydown', (event) => {
       }));
     }
     
-
+      result.classList.add("AnimationShow");
+      result.classList.remove("ResetShow");
       // Show
       await appWindow.setFocus();
       await inputElement?.focus();
@@ -170,13 +177,15 @@ document.addEventListener('keydown', (event) => {
         await appWindow.setFocus();
         await inputElement?.focus();
         await appWindow.hide();
+        result.classList.remove("AnimationShow");
+        result.classList.add("ResetShow");
   }
 
   function OpeningAnimation(){
     const divElement = document.getElementById(`${selected}`)!;
     divElement.children[0].classList.add("AnimtionOpening"); 
     const image = divElement.children[0].children[0] as HTMLImageElement;
-    image.src = 'spinner.png';
+    image.src = 'spinner.svg';
     Changehover(searchName.length, -1);
   }
 
@@ -342,10 +351,10 @@ document.addEventListener('keydown', (event) => {
     <>
     <div id="all" class='invisible select-none'>
       <div id='check' class='invisible text-[0px]' />
-        <div class='bg-gray-200 relative rounded-[20px] text-gray border-2 border-gray-300 h-[90px] w-[800px] left-1/2 -translate-x-1/2'> 
+        <div class='bg-gray-200 relative rounded-[20px] text-gray border-2 border-gray-300 h-[90px] w-[800px] left-1/2 -translate-x-1/2 z-20'> 
           <div class='flex w-full h-full'>
             <div class='ml-2 h-[98%] w-20 '>
-              <Image width={47} height={47} class="opacity-100 top-1/2 -translate-y-1/2 relative left-1/2 -translate-x-1/2" src="/logosearch.png" />
+              <Image width={47} height={47} class="opacity-100 top-1/2 -translate-y-1/2 relative left-1/2 -translate-x-1/2" src="/logo new.png" />
             </div> 
             <div class='w-full'> 
               <input id="input" placeholder="Search with ArcRun" autocomplete="off" class='font-roboto text-[40px] bg-transparent text-black px-2 h-full border-transparent w-[100%] relative top-1/2 -translate-y-1/2 focus:outline-none' />
@@ -355,12 +364,12 @@ document.addEventListener('keydown', (event) => {
             </div>
         </div>
         
-        <div id='result' class='hidden bg-white/0 mt-3 h-5/6 w-full relative bottom-0 roundedd-[20px]'>
+        <div id='result' class='hidden bg-white/0 mt-[0.5rem] h-5/6 w-full relative bottom-0 rounded-[20px] z-10'>
         {/* div jako program */}
         <div id='programMain' class='hidden mb-1 relative shadow-lg left-1/2 -translate-x-1/2 transition-all duration-200 cursor-pointer rounded-[10px] w-[795px] h-[75px] bg-gray-200 overflow-hidden
           before:duration-100 before:left-1/2 before:-translate-x-1/2 before:rounded-[9px] before:h-full before:delay-75 before:transition-all before:absolute'>
             <div class='ml-1 h-[98%] w-14'>
-              <Image width={38} height={38} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/program.png" /> 
+              <Image width={38} height={38} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/program.svg" /> 
             </div>
             <div class='w-[93%]'>
                 <div id='program' class='relative top-1/2 -translate-y-1/2 pl-1 pr-2 pt-[0px] font-roboto font-normal text-[28px] truncate'></div>
@@ -368,15 +377,15 @@ document.addEventListener('keydown', (event) => {
             <div class='absolute -right-6 opacity-0 duration-[175ms] hover:opacity-100 hover:right-0 flex  h-full bg-gray-200 shadow-[0_0px_10px_10px_rgba(229,231,235,1)] z-20'>
               <div class='px-3 hover:invert duration-150 transition-all
                before:duration-150 before:rounded-[0px] before:hover:rounded-full before:transition-all before:top-1/2 before:translate-y-[-50%] before:left-[32px] before:translate-x-[-50%] b before:w-0 before:h-0 before:bg-[#2f64f7]/0 before:invert before:absolute before:hover:w-[70px] before:hover:h-[70px] before:hover:bg-[#2f64f7]'>
-                <Image width={40} height={40} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/openfolder.png" />
+                <Image width={40} height={40} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/openfolder.svg" />
                 </div>
               <div class='pl-3 pr-5 hover:invert duration-150 transition-all
                before:duration-150 before:rounded-[0px] before:hover:rounded-full before:transition-all before:top-1/2 before:translate-y-[-50%] before:left-[32px] before:translate-x-[-50%] b before:w-0 before:h-0 before:bg-[#2f64f7]/0 before:invert before:absolute before:hover:w-[70px] before:hover:h-[70px] before:hover:bg-[#2f64f7]'>
-                <Image width={40} height={40} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/moreabout.png" />
+                <Image width={40} height={40} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/moreabout.svg" />
                 </div>
             </div>
             <div class="absolute right-0 h-full w-16 z-10">
-              <Image width={36} height={36} class="relative top-1/2 left-0 -translate-y-1/2" src="/arrow2.png" />
+              <Image width={36} height={36} class="relative top-1/2 left-0 -translate-y-1/2" src="/arrow2.svg" />
             </div>
           </div>
           
@@ -384,7 +393,7 @@ document.addEventListener('keydown', (event) => {
           <div id='dirMain' class='hidden mb-1 relative shadow-lg left-1/2 -translate-x-1/2 transition-all duration-200 cursor-pointer rounded-[10px] w-[795px] h-[50px] bg-gray-200 overflow-hidden 
           before:duration-100 before:left-1/2 before:-translate-x-1/2 before:rounded-[9px] before:hover:w-full before:h-full before:delay-75 before:transition-all before:absolute'>
             <div class='h-[98%] w-14'>
-              <Image width={30} height={30} class="ml-1 relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/folder.png" />
+              <Image width={30} height={30} class="ml-1 relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/folder.svg" />
             </div>
             <div class='w-[93%]'>
               <div class='relative top-1/2 -translate-y-1/2 px-2 pt-[1px] font-roboto font-normal text-[24px] truncate'></div>
@@ -392,15 +401,16 @@ document.addEventListener('keydown', (event) => {
             <div class='absolute flex -right-6 opacity-0 duration-[175ms] hover:opacity-100 hover:right-0 h-full bg-gray-200  shadow-[0_0px_10px_10px_rgba(229,231,235,1)] z-20'>
               <div class='px-[16px] hover:invert duration-150 transition-all
                before:duration-150 before:rounded-[0px] before:hover:rounded-full before:transition-all before:top-1/2 before:translate-y-[-50%] before:left-[32px] before:translate-x-[-50%] b before:w-0 before:h-0 before:bg-[#2f64f7]/0 before:invert before:absolute before:hover:w-[52px] before:hover:h-[52px] before:hover:bg-[#2f64f7]'>
-                <Image width={32} height={32} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/moreabout.png" />
+                <Image width={32} height={32} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/moreabout.svg" />
                 </div>
             </div>
             <div class="absolute right-0 h-full w-16 z-10">
-              <Image width={28} height={28} class="relative top-1/2 left-0 -translate-y-1/2" src="/arrow2.png" />
+              <Image width={28} height={28} class="relative top-1/2 left-0 -translate-y-1/2" src="/arrow2.svg" />
             </div>
           </div>
         </div>
       </div>
+      <Image width={16} height={16} src="spinner.svg" class='opacity-0' />
     </>
   );
 });
