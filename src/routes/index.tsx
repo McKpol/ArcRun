@@ -9,7 +9,7 @@ import * as tauriEvent from '@tauri-apps/api/event';
 export default component$(() => {
   useVisibleTask$(async () => {
   
-    await unregisterAll();
+    await unregisterAll(); 
   
   // Change Size
   await appWindow.setSize(new LogicalSize(825, 90));
@@ -136,15 +136,24 @@ document.addEventListener('keydown', (event) => {
       await appWindow.setFocus();
       await inputElement?.focus();
       await appWindow.show();
-      if (first){
-        await appWindow.hide();
+      await appWindow.setPosition(new LogicalPosition(x, y)); 
+      while (!(await appWindow.isFocused ())){
+        if (!(await appWindow.isVisible())){
+          break;
+        }
+        await appWindow.setFocus();
       }
     }
   }
   }
 
-    // repair bug
-    await Showapp(true);
+document.getElementById('search')?.addEventListener('mousedown', async () => {
+  await appWindow.startDragging();
+});
+
+inputElement?.addEventListener('blur', () => {
+  inputElement.focus();
+});
 
   await tauriEvent.listen<string>('show', async () => {
     await Showapp();
@@ -196,7 +205,6 @@ document.addEventListener('keydown', (event) => {
   if (event.key == 'Enter'){
     invoke("open", {
       number: searchNumber[selected],
-      whattype: searchType[selected],
       whataction: otherAction.toString()
     });
     OpeningAnimation();
@@ -208,9 +216,6 @@ document.addEventListener('keydown', (event) => {
       await Hideapp();
     }
   })
-
-  // Hide app when opening
-  await appWindow.hide();
   
   // When typing do...
   inputElement?.addEventListener("input", async function() {
@@ -323,7 +328,6 @@ document.addEventListener('keydown', (event) => {
         selected = i;
           invoke("open", {
             number: searchNumber[i],
-            whattype: searchType[i],
             whataction: otherAction.toString()
           });
           OpeningAnimation();
@@ -341,8 +345,8 @@ document.addEventListener('keydown', (event) => {
     selected = searchName.length - 1;
     Changehover(searchName.length, selected, true);
 
-    // Change position    
-    await appWindow.setPosition(new LogicalPosition(x, y));
+    // // Change position    
+    // await appWindow.setPosition(new LogicalPosition(x, y));
     alreadySearching = false;
   });
 });
@@ -351,7 +355,7 @@ document.addEventListener('keydown', (event) => {
     <>
     <div id="all" class='invisible select-none'>
       <div id='check' class='invisible text-[0px]' />
-        <div class='bg-gray-200 relative rounded-[20px] text-gray border-2 border-gray-300 h-[90px] w-[800px] left-1/2 -translate-x-1/2 z-20'> 
+        <div id="search" class='bg-gray-200 relative rounded-[20px] text-gray border-2 border-gray-300 h-[90px] w-[800px] left-1/2 -translate-x-1/2 z-20'> 
           <div class='flex w-full h-full'>
             <div class='ml-2 h-[98%] w-20 '>
               <Image width={47} height={47} class="opacity-100 top-1/2 -translate-y-1/2 relative left-1/2 -translate-x-1/2" src="/logo new.png" />
@@ -359,7 +363,7 @@ document.addEventListener('keydown', (event) => {
             <div class='w-full'> 
               <input id="input" placeholder="Search with ArcRun" autocomplete="off" class='font-roboto text-[40px] bg-transparent text-black px-2 h-full border-transparent w-[100%] relative top-1/2 -translate-y-1/2 focus:outline-none' />
             </div>
-              <div class='bg-gradient-to-r from-transparent via-gray-200/70 to-gray-200 absolute w-12 h-full right-0 mr-5' />
+            <div class='bg-gradient-to-r from-transparent via-gray-200/70 to-gray-200 absolute w-12 h-full right-0 mr-5' />
               <div class='w-4' />
             </div>
         </div>
@@ -392,8 +396,8 @@ document.addEventListener('keydown', (event) => {
           {/* div jako folder */}
           <div id='dirMain' class='hidden mb-1 relative shadow-lg left-1/2 -translate-x-1/2 transition-all duration-200 cursor-pointer rounded-[10px] w-[795px] h-[50px] bg-gray-200 overflow-hidden 
           before:duration-100 before:left-1/2 before:-translate-x-1/2 before:rounded-[9px] before:hover:w-full before:h-full before:delay-75 before:transition-all before:absolute'>
-            <div class='h-[98%] w-14'>
-              <Image width={30} height={30} class="ml-1 relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/folder.svg" />
+            <div class='h-[98%] w-14 ml-1'>
+              <Image width={30} height={30} class="relative left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" src="/folder.svg" />
             </div>
             <div class='w-[93%]'>
               <div class='relative top-1/2 -translate-y-1/2 px-2 pt-[1px] font-roboto font-normal text-[24px] truncate'></div>

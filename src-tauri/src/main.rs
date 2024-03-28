@@ -18,47 +18,27 @@ use native_dialog::{MessageDialog, MessageType};
 
 
 fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
-  // Data
-  let user_name = whoami::username();
-  let program_path = format!("C:/Users/{}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/", user_name);
-  let path_file = format!("C:/Users/{}/AppData/Roaming/arcrun/", user_name);
-  let chpro_file = format!("{}/chpro", path_file);
-  let chprocut_file = format!("{}/chprocut", path_file);
-  let chdircut_file = format!("{}/chdircut", path_file);
-  let chdir_file = format!("{}/chdir", path_file);
+  let user_name =  whoami::username();
+  let programs_path = format!("C:/Users/{}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/", user_name);
+  let path_files = format!("C:/Users/{}/AppData/Roaming/arcrun/", user_name);
+  let path_path = format!("{}/listpath", path_files);
+  let path_cache = format!("{}/listcache", path_files);
 
   // Creating dir and file
-  fs::create_dir_all(path_file)?;
-  let mut file = OpenOptions::new().read(true).write(true).create(true).append(true).open(chpro_file.clone())?;
-  let mut filecut = OpenOptions::new().read(true).write(true).create(true).append(true).open(chprocut_file.clone())?;
-  let mut filedircut = OpenOptions::new().read(true).write(true).create(true).append(true).open(chdircut_file.clone())?;
-  let mut filedir = OpenOptions::new().read(true).write(true).create(true).append(true).open(chdir_file.clone())?;
-
+  fs::create_dir_all(path_files)?;
+  let mut file = OpenOptions::new().read(true).write(true).create(true).append(true).open(path_path.clone())?;
+  OpenOptions::new().read(true).write(true).create(true).append(true).open(path_cache.clone())?;
   // Empting a file
-  fs::write(chpro_file, "")?;
-  fs::write(chprocut_file.clone(), "")?;
-  fs::write(chdircut_file.clone(), "")?;
-  fs::write(chdir_file.clone(), "")?;
-
-  // Search folder, subfolder and files. Then Write to the file chpro_file, chprocut_file. 
-  for programlist in WalkDir::new(program_path).into_iter().filter_map(|file| file.ok()) {
+  fs::write(path_path.clone(), "")?;
+  // Search folder
+  for programlist in WalkDir::new(programs_path).into_iter().filter_map(|file| file.ok()) {
     if programlist.metadata().unwrap().is_file() && programlist.path().extension().unwrap().to_str().unwrap() != "ini" {
-      let programlist = format!("{}", programlist.path().display());
-      writeln!(file, "{}", programlist)?;
-
-      let path = Path::new(&programlist).file_stem().unwrap().to_str().unwrap();
-      writeln!(filecut, "{}", path)?;
+      writeln!(file, "{}", format!("{}", programlist.path().display()))?;
     }
     if programlist.metadata().unwrap().is_dir(){
-      let programlist = format!("{}", programlist.path().display());
-      writeln!(filedir, "{}", programlist)?;
-
-      let dir = Path::new(&programlist).file_stem().unwrap().to_str().unwrap();
-      writeln!(filedircut, "{}", dir)?;
-
+      writeln!(file, "{}", format!("{}", programlist.path().display()))?;
     }
   }
-  
   Ok(())
 }
 
@@ -103,7 +83,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   match cache_programs(){
     Ok(_) => println!("Cashed program list"),
-    Err(_) => println!("Cannot cached program list")
+    Err(e) => println!("Cannot cached program list: {}", e)
   }
 
   // CONFIG FILE (for later)
@@ -166,6 +146,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   tauri::Builder::default()
   .setup(move |app|{
+    
+    let _ = tauri::window::Window::hide(&app.get_window("main").unwrap());
     if autostart {
       app.manage(Mutex::new(TrayState::True));
     } else {
@@ -243,125 +225,82 @@ fn cant_set_hotkey() -> bool{
   yes
   }
 
-#[tauri::command]
-fn open(number: String, whattype: String, whataction: String){
-  // Data
-  let user_name = whoami::username();
-  let path_file = format!("C:/Users/{}/AppData/Roaming/arcrun/", user_name);
-
-  // Program
-  if whattype == "0".to_string(){
+  #[tauri::command]
+  fn open(number: String, whataction: String){
     // Data
-    let chpro_file = format!("{}/chpro", path_file);
-    let mut file_ = File::open(chpro_file).unwrap();
-    let mut buf = String::new();
-    file_.read_to_string(&mut buf).unwrap();
-    
-    // Run program
-    if whataction == "1"{
-      match open_with::show_in_folder(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
-        Ok(()) => print!(""),
-        Err(e) => println!("{}", e),
-      }
-    } else if whataction == "2"{
-      match open_with::show_properties(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
-        Ok(()) => print!(""),
-        Err(e) => println!("{}", e),
-      }
-    } else if whataction == "0"{
-      match open_with::open(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
-        Ok(()) => print!(""),
-        Err(e) => println!("{}", e),
-      }
-    }
+    let user_name = whoami::username();
+    let path_files = format!("C:/Users/{}/AppData/Roaming/arcrun/", user_name);
+    let path_path = format!("{}/listpath", path_files);
+    let mut file_path = File::open(path_path).unwrap();
 
-  
-  // Dir
-  } else if whattype == "1".to_string() {
-
-    let chdir_file = format!("{}/chdir", path_file);
-    let mut dir_ = File::open(chdir_file).unwrap();
     let mut buf = String::new();
-    dir_.read_to_string(&mut buf).unwrap();
-    
-    // Open directory
-    if whataction == "0"{
-      match open_with::open(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
-        Ok(()) => print!(""),
-        Err(e) => println!("{}", e),
+    file_path.read_to_string(&mut buf).unwrap();
+
+      if whataction == "1"{
+        match open_with::show_in_folder(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
+          Ok(()) => print!(""),
+          Err(e) => println!("{}", e),
+        }
+      } else if whataction == "2"{
+        match open_with::show_properties(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
+          Ok(()) => print!(""),
+          Err(e) => println!("{}", e),
+        }
+      } else if whataction == "0"{
+        match open_with::open(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
+          Ok(()) => print!(""),
+          Err(e) => println!("{}", e),
+        }
       }
-    } else if whataction == "2" {
-      match open_with::show_properties(PathBuf::from(buf.lines().nth(number.parse::<usize>().unwrap()).unwrap().to_string())){
-        Ok(()) => print!(""),
-        Err(e) => println!("{}", e),
-      }
-    }
   }
-}
 
 #[tauri::command]
 fn search(search: String) -> Vec<String> {
-  // Data
-  let user_name = whoami::username();
-  let path_file = format!("C:/Users/{}/AppData/Roaming/arcrun/", user_name);
-  let chprocut_file = format!("{}/chprocut", path_file);
-  let chdircut_file = format!("{}/chdircut", path_file);
+  let user_name =  whoami::username();
+  let path_files = format!("C:/Users/{}/AppData/Roaming/arcrun/", user_name);
+  let path_path = format!("{}/listpath", path_files);
 
-  let mut filecut_ = File::open(chprocut_file).unwrap();
-  let mut dircut_ = File::open(chdircut_file).unwrap();
+  let file_path = File::open(path_path);
+
+  // Data
   let mut buf = String::new();
-  let mut bufdir = String::new();
   let mut nline = 0;
   let mut nb_result = 0;
   let mut lista: Vec<String> = Vec::new();
-  filecut_.read_to_string(&mut buf).unwrap();
-  
+  let mut listadir: Vec<String> = Vec::new();
+  file_path.unwrap().read_to_string(&mut buf).unwrap();
+
+  let mut path: &Path;
+  let mut file;
+  let mut name = "ERROR";
   // Search in file chprocut_file
   for line in buf.lines(){
+    path = Path::new(line);
+    if let Some(fina) = path.file_stem().unwrap().to_str(){
+      name = fina;
+    };
+    file = path.is_file();
+
     if line.to_lowercase().contains(&search){
       nb_result += 1;
-      // println!("{} {} {}", search, nline, nb_result);
-      lista.push(nline.to_string());
-      lista.push(buf.lines().nth(nline).unwrap().to_string());
-      lista.push("0".to_string());
-      if nb_result == 5{
+
+      if file {
+        lista.push(nline.to_string());
+        lista.push(name.to_string());
+        lista.push("0".to_string());
+      } else {
+        listadir.push(nline.to_string());
+        listadir.push(name.to_string());
+        listadir.push("1".to_string());
+      }
+
+      if nb_result == 8{
         break;
       }
     }
     nline += 1;
   }
-
-  dircut_.read_to_string(&mut bufdir).unwrap();
-  nb_result = 0;
-  nline = 0;
-
-  for line in bufdir.lines(){
-    if line.to_lowercase().contains(&search){
-      nb_result += 1;
-      println!("{}", bufdir.lines().nth(nline).unwrap().to_string());
-      lista.push(nline.to_string());
-      lista.push(bufdir.lines().nth(nline).unwrap().to_string());
-      lista.push("1".to_string());
-      if nb_result == 3{
-        break;
-      }
-    }
-    nline += 1;
-  }
-
-//   println!();
-//   println!();
-//   for element in &lista {
-//     println!("{}", element);
-// }
-
-  // Sending to FrontEnd
-  // let mut prime = "";
-  // if nline != buf.lines().count() && nline != 0{
-  //   prime = buf.lines().nth(nline).unwrap();
-  // }
-  // println!("{}", prime);
+  lista.extend(listadir);
 
   lista.into()
-
 }

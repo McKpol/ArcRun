@@ -7,8 +7,8 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "arcrun",
-    "version": "0.0.4"
+    "productName": "ArcRun Beta",
+    "version": "0.0.5"
   },
   "tauri": {
     "systemTray": {
@@ -71,7 +71,6 @@
         "title": "ArcRun Beta",
         "width": 1,
         "transparent": true,
-        "center": true,
         "alwaysOnTop": true,
         "skipTaskbar": true
       }
