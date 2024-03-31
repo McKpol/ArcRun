@@ -4,8 +4,11 @@
 ArcRun is swift, safe searchbar with smooth and great desing. 
 ![image](https://github.com/McKpol/ArcRun/assets/104125769/d3a8b93f-b106-43bb-b4e3-616d140e7898)      
 
+> [!IMPORTANT]
+> Now search engine are limited to folder of programs on windows, so you can only use to open programs (not all). 
+
 > [!WARNING]
-> Program is still in early development and it need so much to improve.
+> Program is still in early development and it need so much to improve, it may have some bugs!
 
 ## Things to improve
 
@@ -17,11 +20,13 @@ ArcRun is swift, safe searchbar with smooth and great desing.
 - [ ] Add more themes
 - [ ] Add custom hotkey
 - [ ] Add replace Windows/Superkey hotkey 
+- [ ] Add search engine settings
 
 ### search engine
 - [ ] Add queue to the search (don't wait for searching all the cache to give the results)
 - [ ] Add more folders to search
 - [ ] Add multithreading to backend
+- [ ] Add compress to cache
 
 ## How to use it?
 1. Clone repo with ```git clone McKpol/ArcRun``` or by downloading zip
