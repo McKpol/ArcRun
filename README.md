@@ -44,6 +44,8 @@ renovate[bot] - https://github.com/tauri-apps/plugins-workspace/tree/v1/plugins/
 
 Jackhenry Design - https://www.svgrepo.com/svg/453347/folder
 
+Will Kelly - https://www.svgrepo.com/svg/491270/loading-spinner
+
 ### CC Attribution
 
 krystonschwarze
@@ -53,6 +55,12 @@ https://www.svgrepo.com/svg/511219/window-code-block
 https://www.svgrepo.com/svg/511031/info
 
 https://www.svgrepo.com/svg/510998/folder
+
+https://www.svgrepo.com/svg/511114/remove-minus
+
+https://www.svgrepo.com/svg/510922/close-sm
+
+Konstantin Filatov - https://www.svgrepo.com/svg/521481/arrow-prev-small
 
 ## License
 MIT License
