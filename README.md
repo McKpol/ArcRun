@@ -23,6 +23,7 @@ ArcRun is swift, safe searchbar with smooth and great desing.
 - [ ] Add custom hotkey
 - [ ] Add replace Windows/Superkey hotkey 
 - [ ] Add search engine settings
+- [ ] Add auto update
 
 ### search engine
 - [ ] Add queue to the search (don't wait for searching all the cache to give the results)
