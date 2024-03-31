@@ -1,22 +1,33 @@
 
-# ArcRun by McKpl
-ArcRun is clone of spotlight search from macos and powertoys from windows, but better.
-We are using Tauri and Qwik to build this WebApp.
-App is on early development, now it only looks nice.
+# ![32x32](https://github.com/McKpol/ArcRun/assets/104125769/449841d4-7e0d-42ac-ae74-4cd9763a6221) ArcRun by McKpl
 
-![image](https://github.com/McKpol/ArcRun/assets/104125769/7465cbed-4318-442e-9413-959c84e69eae)
+ArcRun is swift, safe searchbar with smooth and great desing. 
+![image](https://github.com/McKpol/ArcRun/assets/104125769/d3a8b93f-b106-43bb-b4e3-616d140e7898)      
+
+> [!WARNING]
+> Program is still in early development and it need so much to improve.
+
+## Things to improve
+
+### front end
+- [ ] Add settings window
+- [ ] Add all results window
+
+### settings
+- [ ] Add more themes
+- [ ] Add custom hotkey
+- [ ] Add replace Windows/Superkey hotkey 
+
+### search engine
+- [ ] Add queue to the search (don't wait for searching all the cache to give the results)
+- [ ] Add more folders to search
+- [ ] Add multithreading to backend
 
 ## How to use it?
 1. Clone repo with ```git clone McKpol/ArcRun``` or by downloading zip
 2. Use ```npm i``` to install node modules
 2. Use ```npm run tauri dev``` for visible changes
 3. Use ```npm run tauri build``` for building app (for windows installer is in src-tauri/target/release/bundle /msi or /nsis) more info on https://tauri.app/v1/guides/building
-
-## Developers
-
-McKpl - Main Developer
-
-xKotelek - Front-end Helper
 
 ## Project Structure
 
@@ -40,27 +51,22 @@ xKotelek - Front-end Helper
 
 ### MIT
 
-renovate[bot] - https://github.com/tauri-apps/plugins-workspace/tree/v1/plugins/single-instance
-
-Jackhenry Design - https://www.svgrepo.com/svg/453347/folder
-
+renovate[bot] - https://github.com/tauri-apps/plugins-workspace/tree/v1/plugins/single-instance   
+Jackhenry Design - https://www.svgrepo.com/svg/453347/folder   
 Will Kelly - https://www.svgrepo.com/svg/491270/loading-spinner
 
 ### CC Attribution
 
-krystonschwarze
+Konstantin Filatov - https://www.svgrepo.com/svg/521481/arrow-prev-small
 
-https://www.svgrepo.com/svg/511219/window-code-block 
-
-https://www.svgrepo.com/svg/511031/info
-
-https://www.svgrepo.com/svg/510998/folder
-
-https://www.svgrepo.com/svg/511114/remove-minus
-
+krystonschwarze   
+https://www.svgrepo.com/svg/511219/window-code-block    
+https://www.svgrepo.com/svg/511031/info   
+https://www.svgrepo.com/svg/510998/folder    
+https://www.svgrepo.com/svg/511114/remove-minus    
 https://www.svgrepo.com/svg/510922/close-sm
 
-Konstantin Filatov - https://www.svgrepo.com/svg/521481/arrow-prev-small
+@xKotelek thanks for help.
 
 ## License
 MIT License
