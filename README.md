@@ -15,6 +15,8 @@ ArcRun is swift, safe searchbar with smooth and great desing.
 ### front end
 - [ ] Add settings window
 - [ ] Add all results window
+- [ ] Add icons to results
+- [ ] Add open as administrator
 
 ### settings
 - [ ] Add more themes
@@ -27,6 +29,8 @@ ArcRun is swift, safe searchbar with smooth and great desing.
 - [ ] Add more folders to search
 - [ ] Add multithreading to backend
 - [ ] Add compress to cache
+- [ ] Add .Ink file are returning the original file on themself
+- [ ] Add more extensions to search (also separate all files to one)
 
 ## How to use it?
 1. Clone repo with ```git clone McKpol/ArcRun``` or by downloading zip
