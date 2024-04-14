@@ -1,4 +1,4 @@
-import { component$, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useVisibleTask$, useOnDocument, $, useStore } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { Image } from '@unpic/qwik';
 import { appWindow, LogicalPosition, LogicalSize } from "@tauri-apps/api/window";
@@ -6,16 +6,40 @@ import { invoke } from "@tauri-apps/api";
 import { register, unregisterAll } from '@tauri-apps/api/globalShortcut';
 import * as tauriEvent from '@tauri-apps/api/event';
 
+interface Settings{
+  scale: number;
+  top: number;
+}
+
 export default component$(() => {
+  const settings = useStore<Settings>({
+    scale: 100,
+    top: 5
+  });
+
   useVisibleTask$(async () => {
   
     await unregisterAll(); 
+
+  let message: String;
+
+  // Read Scale
+  message = await invoke("read_settings", {
+    line: 0
+  });
+  settings.scale = Number(message) * 100 / 8 + 50;
+
+  // Read top
+  message = await invoke("read_settings", {
+    line: 1
+  });
+  settings.top = Number(message) + 2;
   
   // Change Size
-  await appWindow.setSize(new LogicalSize(825, 90));
-  
+  await appWindow.setSize(new LogicalSize(825 * settings.scale / 100, 90 * settings.scale / 100));
+
   // Change Position
-  const x = window.screen.width / 2 - window.innerWidth / 2;
+  let x = window.screen.width / 2 - window.innerWidth / 2;
   let y = window.screen.height / 2 - window.innerHeight /2;
   await appWindow.setPosition(new LogicalPosition(x, y)); 
 
@@ -34,17 +58,18 @@ export default component$(() => {
   let selected = -1;
   let alreadySearching = false;
   let block = false;
+  let blockhide = false;
 
 // Search results
   const searchType: string[] = [];
   const searchNumber: string[] = [];
   const searchName: string[] = [];
 
-inputElement?.addEventListener('keydown', function(event) {
-    if ([38, 40].includes(event.keyCode)) {
-        event.preventDefault();
-    }
-});
+// document.addEventListener('keydown', function(event) {
+//     if ([38, 40].includes(event.keyCode)) {
+//         event.preventDefault();
+//     }
+// });
 
   function Changehover(numberofdiv: number, selected: number, nonanimation: boolean = false){
     let divElement;
@@ -113,11 +138,26 @@ document.addEventListener('keydown', (event) => {
 }); 
 
   async function Showapp(first: boolean = false) {
+
+    let message: String;
+    // Read Scale
+    message = await invoke("read_settings", {
+      line: 0
+    });
+    settings.scale = Number(message) * 100 / 8 + 50;
+    
+    // Read top
+    message = await invoke("read_settings", {
+      line: 1
+    });
+    settings.top = Number(message) + 2;
+
     // Checking if window is not focused
     if (!block){
     if (!(await appWindow.isFocused ())){
+      blockhide = true;
       if (!(first)){
-      all.style.visibility = "visible";
+      all.classList.remove("invisible");
       console.log('Showing window');
 
       // Setting the value of input
@@ -143,6 +183,9 @@ document.addEventListener('keydown', (event) => {
         }
         await appWindow.setFocus();
       }
+      setTimeout(function(){
+        blockhide = false;
+    }, 500);
     }
   }
   }
@@ -183,11 +226,13 @@ inputElement?.addEventListener('blur', () => {
 
   // Hide when unfocused (set focus have purpuse when clicking alt + space)
   async function Hideapp() {
+    if (!blockhide){
         await appWindow.setFocus();
         await inputElement?.focus();
         await appWindow.hide();
         result.classList.remove("AnimationShow");
         result.classList.add("ResetShow");
+      }
   }
 
   function OpeningAnimation(){
@@ -249,8 +294,8 @@ inputElement?.addEventListener('blur', () => {
   // Show or Hide if search content is true
     if (message.length == 0){
       result.style.display = "none";
-      await appWindow.setSize(new LogicalSize(825, 92));
-      y = window.screen.height / 5;
+      await appWindow.setSize(new LogicalSize(825 * settings.scale / 100, 92 * settings.scale / 100));
+      
     } else {
 
       if (searchName.length == 8){
@@ -270,8 +315,8 @@ inputElement?.addEventListener('blur', () => {
       heightApp = 104 + 79 * programList + 54 * dirList - 4;
       
       result.style.display = "block";
-      await appWindow.setSize(new LogicalSize(825, heightApp));
-      y = window.screen.height / 5; 
+      await appWindow.setSize(new LogicalSize(825 * settings.scale / 100, heightApp * settings.scale / 100));
+
       
   // Reversing list
     searchNumber.reverse();
@@ -348,12 +393,29 @@ inputElement?.addEventListener('blur', () => {
     // // Change position    
     // await appWindow.setPosition(new LogicalPosition(x, y));
     alreadySearching = false;
+  
+    if (all.offsetHeight * ( 50 / 200 - (settings.scale - 50) / 200) > 0){
+      all.style.top = `-${all.offsetHeight * ( 50 / 200 - (settings.scale - 50) / 200)}px`
+    } else {
+      all.style.top = `${all.offsetHeight * ( 50 / 200 - (settings.scale - 50) / 200) * -1}px`
+    }
+    x = window.screen.width / 2 - window.innerWidth / 2;
+    y = ((window.screen.height / settings.top) / window.devicePixelRatio) / (settings.scale / 100);
+    
   });
 });
+useOnDocument(
+  'keydown',
+  $((event) => {
+    if ([38, 40].includes(event.keyCode)) {
+      event.preventDefault();
+  }
+  })
+);
 
   return (
     <>
-    <div id="all" class='invisible select-none'>
+    <div id="all" style={`--scale: ${settings.scale / 100};`} class={`invisible select-none searchbar-set relative`}>
       <div id='check' class='invisible text-[0px]' />
         <div id="search" class='bg-gray-200 relative rounded-[20px] text-gray border-2 border-gray-300 h-[90px] w-[800px] left-1/2 -translate-x-1/2 z-20'> 
           <div class='flex w-full h-full'>
@@ -420,11 +482,11 @@ inputElement?.addEventListener('blur', () => {
 });
 
   export const head: DocumentHead = {
-  title: "arcrun",
+  title: "ArcRun Beta",
   meta: [
     {
-      name: "arcrun",
-      content: "arcrun",
+      name: "ArcRun Beta",
+      content: "ArcRun Beta",
     },
   ],
 };

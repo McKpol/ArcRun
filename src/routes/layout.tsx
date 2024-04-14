@@ -16,7 +16,6 @@ export default component$(() => {
   return (
     <>
       <Slot />
-      <script src="https://kit.fontawesome.com/681f16d40f.js" crossOrigin="anonymous"></script>
     </>
   );
 });

@@ -1,8 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::Manager;
-use std::sync::Mutex;
+use serde_json::Number;
+use tauri::{utils::config, Manager};
 use std::{fs::{self, File, OpenOptions}, io::{Read, Write}};
 use walkdir::WalkDir;
 use whoami;
@@ -15,7 +15,9 @@ use std::env;
 use auto_launch::AutoLaunchBuilder;
 use tauri::AppHandle;
 use native_dialog::{MessageDialog, MessageType};
+use tauri::SystemTrayMenuItem;
 
+static CONFIG_FILL: [&str; 2] = ["4", "5"];
 
 fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
   let user_name =  whoami::username();
@@ -42,40 +44,10 @@ fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
   Ok(())
 }
 
-fn set_auto_start(){
-  match env::current_exe() {
-    Ok(exe_path) => {
-      let auto = AutoLaunchBuilder::new()
-      .set_app_name("ArcRun")
-      .set_app_path(exe_path.display().to_string().as_str())
-      .set_use_launch_agent(true)
-      .build()
-      .unwrap();
-    
-      if auto.is_enabled().unwrap() {
-        println!("disabling");
-        auto.disable().unwrap();
-      } else {
-        println!("enabling");
-        auto.enable().unwrap();
-      }
-    },
-    Err(e) => {
-      println!("{}", e)
-    },
-};
-
-}
-
 #[derive(Clone, serde::Serialize)]
 struct Payload {
   args: Vec<String>,
   cwd: String,
-}
-
-enum TrayState {
-  False,
-  True,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -86,73 +58,41 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Err(e) => println!("Cannot cached program list: {}", e)
   }
 
-  // CONFIG FILE (for later)
+  // CONFIG FILE
 
-  // let mut config_fill = ["0"]; // Deafult Settings
+  let mut config_fill = CONFIG_FILL; // Deafult Settings
 
-  // let user_name = whoami::username();
-  // let config_file = format!("C:/Users/{}/AppData/Roaming/arcrun/config", user_name);
-  // let mut config_open = OpenOptions::new().read(true).write(true).create(true).append(true).open(config_file.clone())?;
-  // let mut config_string = String::new();
-  // config_open.read_to_string(&mut config_string)?;
+  let user_name = whoami::username();
+  let config_file = format!("C:/Users/{}/AppData/Roaming/arcrun/config", user_name);
+  let mut config_open = OpenOptions::new().read(true).write(true).create(true).append(true).open(config_file.clone())?;
+  let mut config_string = String::new();
+  config_open.read_to_string(&mut config_string)?;
 
-  // let mut i = 0;
-  // for lines in config_string.lines(){
-  //   i += 1;
-  // }
-
-  // fs::write(config_file.clone(), "")?;
-
-  // for lines in config_fill{
-  //   writeln!(config_open, "{}", lines);
-  // }
-
-  let mut autostart = false;
-
-  match env::current_exe() {
-    Ok(exe_path) => {
-      let auto = AutoLaunchBuilder::new()
-      .set_app_name("ArcRun")
-      .set_app_path(exe_path.display().to_string().as_str())
-      .set_use_launch_agent(true)
-      .build()
-      .unwrap();
-
-      if auto.is_enabled().unwrap() {
-        autostart = true;
-      } else {
-        autostart = false;
-      }
-    },
-    Err(e) => {
-      println!("{}", e);
-    },
-};
-  
-  let startup;
-  let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-
-  if autostart {
-    startup = CustomMenuItem::new("startup".to_string(), "Run on startup").selected();
-  } else {
-    startup = CustomMenuItem::new("startup".to_string(), "Run on startup");
+  let mut i = 0;
+  for lines in config_string.lines(){
+    config_fill[i] = lines;
+    i += 1;
   }
 
+  fs::write(config_file.clone(), "")?;
+
+  for lines in config_fill{
+    writeln!(config_open, "{}", lines)?;
+  }
+
+
+  let settings = CustomMenuItem::new("settings".to_string(), "Settings");
+  let quit = CustomMenuItem::new("quit".to_string(), "Quit");
+
   let tray_menu = SystemTrayMenu::new()
-  .add_item(startup)
+  .add_item(settings)
+  .add_native_item(SystemTrayMenuItem::Separator)
   .add_item(quit);
 
   let tray = SystemTray::new().with_menu(tray_menu);
 
   tauri::Builder::default()
-  .setup(move |app|{
-    
-    let _ = tauri::window::Window::hide(&app.get_window("main").unwrap());
-    if autostart {
-      app.manage(Mutex::new(TrayState::True));
-    } else {
-      app.manage(Mutex::new(TrayState::False));
-    }
+  .setup(move | _app |{
     Ok(())
   })
   .system_tray(tray)
@@ -166,36 +106,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
       let _ = main_window.emit("show", "nothing");
     }
     SystemTrayEvent::MenuItemClick { id, .. } => {
-      let item_handle = app.tray_handle().get_item(&id);
       match id.as_str() {
           "quit" => {
           AppHandle::exit(app, 0);
         }
-        "startup" => {
-          let tray_state_mutex = app.state::<Mutex<TrayState>>();
-          let mut tray_state = tray_state_mutex.lock().unwrap();
-          match *tray_state{
-            TrayState::True => {
-              match env::current_exe() {
-                Ok(_e) => {
-                  let _ = item_handle.set_selected(false);
-                  *tray_state = TrayState::False;
-                  set_auto_start();
-                },
-                Err(e) => println!("failed to get current exe path: {e}"),
-            };
-          }
-            TrayState::False => {
-              match env::current_exe() {
-                Ok(_e) => {
-                  let _ = item_handle.set_selected(true);
-                  *tray_state = TrayState::True;
-                  set_auto_start();
-                },
-                Err(e) => println!("failed to get current exe path: {e}"),
-            };
-            },
-          };
+          "settings" => {
+            let _ = tauri::window::Window::show(&app.get_window("settings").unwrap());
         }
         _ => {}
       }
@@ -207,7 +123,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
       println!("{}, {argv:?}, {cwd}", app.package_info().name);
       app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
   }))
-    .invoke_handler(tauri::generate_handler![search, open, cant_set_hotkey])
+    .invoke_handler(tauri::generate_handler![search, open, cant_set_hotkey, set_auto_start, check_auto_start, read_settings, write_settings])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
   Ok(())
@@ -255,6 +171,64 @@ fn cant_set_hotkey() -> bool{
   }
 
 #[tauri::command]
+fn read_settings(line: usize) -> String{
+
+  fn yes(line: usize) -> Result<String, Box<dyn std::error::Error>> {
+    let user_name = whoami::username();
+    let config_file = format!("C:/Users/{}/AppData/Roaming/arcrun/config", user_name);
+    let mut config_open = OpenOptions::new().read(true).write(true).create(true).append(true).open(config_file.clone())?;
+    let mut config_string = String::new();
+    config_open.read_to_string(&mut config_string)?;
+  
+    let smth = config_string.lines().nth(line).map(str::to_string).as_deref().unwrap_or("deafult string").to_string();
+    return Ok(smth)
+  }
+  
+  match yes(line) {
+    Ok(smth) => smth,
+    Err(_e) => "Error".to_string(),
+  }
+}
+
+#[tauri::command]
+fn write_settings(line: usize, content: String){
+  fn yes(line: usize, content: String) -> Result<(), Box<dyn std::error::Error>>{
+    let mut config_fill = CONFIG_FILL; // Deafult Settings
+    
+    let user_name = whoami::username();
+    let config_file = format!("C:/Users/{}/AppData/Roaming/arcrun/config", user_name);
+    let mut config_open = OpenOptions::new().read(true).write(true).create(true).append(true).open(config_file.clone())?;
+    let mut config_string = String::new();
+    config_open.read_to_string(&mut config_string)?;
+  
+    let mut i = 0;
+    for lines in config_string.lines(){
+      config_fill[i] = lines;
+      i += 1;
+    }
+
+    if config_fill[line] == content{
+      println!("Skipped");
+      return Ok(());
+    }
+
+    config_fill[line] = &content;
+
+    fs::write(config_file.clone(), "")?;
+  
+    for lines in config_fill{
+      writeln!(config_open, "{}", lines)?;
+    }
+    Ok(())
+  }
+  
+  match yes(line, content) {
+    Ok(_) => println!("Success writing settings"),
+    Err(e) => println!("{}", e)
+  }
+}
+
+#[tauri::command]
 fn search(search: String) -> Vec<String> {
   let user_name =  whoami::username();
   let path_files = format!("C:/Users/{}/AppData/Roaming/arcrun/", user_name);
@@ -281,7 +255,7 @@ fn search(search: String) -> Vec<String> {
     };
     file = path.is_file();
 
-    if line.to_lowercase().contains(&search){
+    if name.to_lowercase().contains(&search){
       nb_result += 1;
 
       if file {
@@ -303,4 +277,57 @@ fn search(search: String) -> Vec<String> {
   lista.extend(listadir);
 
   lista.into()
+}
+
+#[tauri::command]
+fn check_auto_start() -> bool{
+  let mut autostart = false;
+
+  match env::current_exe() {
+    Ok(exe_path) => {
+      let auto = AutoLaunchBuilder::new()
+      .set_app_name("ArcRun")
+      .set_app_path(exe_path.display().to_string().as_str())
+      .set_use_launch_agent(true)
+      .build()
+      .unwrap();
+
+      if auto.is_enabled().unwrap() {
+        autostart = true;
+      } else {
+        autostart = false;
+      }
+    },
+    Err(e) => {
+      println!("{}", e);
+    },
+};
+
+  autostart
+}
+
+#[tauri::command]
+fn set_auto_start(){
+  match env::current_exe() {
+    Ok(exe_path) => {
+      let auto = AutoLaunchBuilder::new()
+      .set_app_name("ArcRun")
+      .set_app_path(exe_path.display().to_string().as_str())
+      .set_use_launch_agent(true)
+      .build()
+      .unwrap();
+    
+      if auto.is_enabled().unwrap() {
+        println!("disabling");
+        auto.disable().unwrap();
+      } else {
+        println!("enabling");
+        auto.enable().unwrap();
+      }
+    },
+    Err(e) => {
+      println!("{}", e)
+    },
+};
+
 }
