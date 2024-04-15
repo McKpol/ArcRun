@@ -17,7 +17,7 @@ use tauri::AppHandle;
 use native_dialog::{MessageDialog, MessageType};
 use tauri::SystemTrayMenuItem;
 
-static CONFIG_FILL: [&str; 2] = ["4", "5"];
+static CONFIG_FILL: [&str; 2] = ["4", "3"];
 
 fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
   let user_name =  whoami::username();

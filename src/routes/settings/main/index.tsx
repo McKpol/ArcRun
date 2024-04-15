@@ -38,8 +38,8 @@ export default component$(() => {
   });
   const title = useStore<Title>({
     autostart: "Start on login",
-    scale: "Height",
-    top: "Scale"
+    scale: "Scale",
+    top: "Height"
   });
   const description = useStore<Description>({
     autostart: "Program will start after you log on the system.",
