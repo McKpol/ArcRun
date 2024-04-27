@@ -13,14 +13,14 @@ ArcRun is swift, safe searchbar with smooth and great desing.
 ## Things to improve
 
 ### front end
-- [ ] Add settings window
+- [x] Add settings window
 - [ ] Add all results window
 - [ ] Add icons to results
 - [ ] Add open as administrator
 
 ### settings
 - [ ] Add more themes
-- [ ] Add scale
+- [x] Add scale
 - [ ] Add custom hotkey
 - [ ] Add replace Windows/Superkey hotkey 
 - [ ] Add search engine settings
