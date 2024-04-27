@@ -1,6 +1,8 @@
-import { component$, useStore, Slot, useVisibleTask$ } from '@builder.io/qwik';
+import { component$, useStore, useVisibleTask$ } from '@builder.io/qwik';
 import { Image } from '@unpic/qwik';
 import { appWindow } from '@tauri-apps/api/window';
+import { ContentMain } from './main/index';
+import { ContentData } from './data/index';
 
 interface State {
   main: string;
@@ -14,17 +16,14 @@ interface Image {
   data: string;
 }
 
-interface Url {
-  main: string;
-  algorithm: string;
-  data: string;
+interface Site {
+  main: boolean;
+  algorithm: boolean;
+  data: boolean;
 }
 
 interface Nav {
   hover: boolean;
-  main: boolean;
-  algorithm: boolean;
-  data: boolean;
 }
 
 export default component$(() => {
@@ -41,38 +40,28 @@ export default component$(() => {
     data: "/data.svg"
   });
 
-  const url = useStore<Url>({
-    main: "../main",
-    algorithm: "../algorithm",
-    data: "../data"
-  });
-
-  const nav = useStore<Nav>({
-    hover: true,
-    main: false,
+  const site = useStore<Site>({
+    main: true,
     algorithm: false,
     data: false
   });
 
+  const nav = useStore<Nav>({
+    hover: false,
+  });
+
+  let showMain = "hidden";
+  let showData = "hidden";
+
+  if (site.main){
+    showMain = "flex";
+  }
+  if (site.data){
+    showData = "flex";
+  }
+
   useVisibleTask$(async () => {
-    nav.main = window.location.href.includes("settings/main");
-    nav.algorithm = window.location.href.includes("settings/algorithm");
-    nav.data = window.location.href.includes("settings/data");
-
     const leftbarElement = document.getElementsByTagName("leftbar")[0] as HTMLElement;
-
-    if (!await appWindow.isFocused()) {
-      nav.hover = false;
-      leftbarElement.classList.remove("w-[13rem]");
-      leftbarElement.classList.add("w-[3rem]");
-    } else {
-      leftbarElement.classList.add("AnimationOpeningNavBarhover");
-    }
-
-    setTimeout(function(){
-      leftbarElement.classList.add("transition-all");
-      leftbarElement.classList.add("duration-200");
-  }, 200);
 
     leftbarElement.addEventListener('mouseover', () => {
       leftbarElement.classList.add("AnimationOpeningNavBarhover");
@@ -80,10 +69,6 @@ export default component$(() => {
 
     leftbarElement.addEventListener('mouseout', () => {
       leftbarElement.classList.remove("AnimationOpeningNavBarhover");
-      if (leftbarElement.classList.contains("w-[13rem]")){
-        leftbarElement.classList.remove("w-[13rem]");
-        leftbarElement.classList.add("w-[3rem]");
-      }
     });
 
     document.getElementsByTagName("minimizebutton")[0].addEventListener("click", async () => {
@@ -102,7 +87,7 @@ export default component$(() => {
     <container class="bg-gray-50 h-full w-full absolute rounded-3xl overflow-hidden">
       <topbar class="bg-white duration-200 absolute w-full h-8 shadow-md z-20 select-none">
         <dragging class="w-full h-full absolute right-0 mr-24 z-20" />
-        <logo class="absolute ml-3"><Image width={24} height={24} src="/logo new.png" class="mt-1 mr-2" /></logo>
+        <logo class="absolute ml-3"><Image width={24} height={24} src="/logo new small.png" class="mt-1 mr-2" /></logo>
         <name class="absolute h-full left-1/2 -translate-x-1/2"><p class="mt-[0.20rem] mr-2">ArcRun - Settings</p></name>
         <buttons class="absolute h-full w-24 right-0 flex">
         <minimizebutton class="hover:bg-blue-500 flex-1 h-full w-full transition-all duration-100"><Image width={36} height={36} src="/minimize.svg" class="relative h-full -bottom-1 left-1/2 -translate-x-1/2 stroke-1" /></minimizebutton>
@@ -110,18 +95,21 @@ export default component$(() => {
         </buttons>
       </topbar>
 
-      <leftbar class="overflow-hidden bg-white shadow-md border-gray-200 w-[13rem] absolute h-full mt-8 z-20 select-none" onMouseEnter$={() => nav.hover = true} onMouseLeave$={() => nav.hover = false}>
+      <leftbar class="overflow-hidden bg-white shadow-md border-gray-200 w-[3rem] absolute h-full mt-8 z-20 select-none transition-all duration-200" onMouseEnter$={() => nav.hover = true} onMouseLeave$={() => nav.hover = false}>
       <chose class="absolute left-[10%] h-full w-[90%] flex-col flex">
         <logo id="logo" class="mt-3 w-[36px] h-[36px] absolute left-[45%] -translate-x-[50%]">
           <Image width={36} height={36} src="/setting.svg" />
         </logo>
         <separator class="mt-[3.5rem] mb-1 h-[1px] w-[90%] bg-black" />
-            <Option state={name.main} nav={nav.hover} image={image.main} selected={nav.main} url={url.main}  />
+            <div onMouseDown$={() => {site.main = true; site.data = false;}}><Option state={name.main} nav={nav.hover} image={image.main} selected={site.main}   /></div>
+            <div onMouseDown$={() => {site.data = true; site.main = false;}}><Option state={name.data} nav={nav.hover} image={image.data} selected={site.data}  /></div>
         </chose>
       </leftbar>
 
       <content class="flex absolute h-full ml-12 mt-8 w-full">
-        <Slot />
+        <div class={`${showMain}`}> <ContentMain visible={site.main} /> </div>
+
+        <div class={`${showData}`}> <ContentData /> </div>
       </content>
     </container>
     </>
@@ -129,17 +117,15 @@ export default component$(() => {
 
 });
 
-export const Option = component$((props: { state: string, nav: boolean, image: string, selected: boolean, url: string }) => {
+export const Option = component$((props: { state: string, nav: boolean, image: string, selected: boolean }) => {
   let option_class = "cursor-pointer relative left-[5%] pt-1 pb-1 border-b-2 border-white flex before:hover:bg-blue-500 before:bg-blue-500/0 before:duration-150 before:absolute before:w-[90%] hover:before:w-[95%] before:h-full before:-top-[1.5px] before:-left-[5%] before:rounded-xl";
   let Image_class = "textnav z-10 AnimationImageunhover";
   let p_class = "relative ml-1 left-[20%] -translate-x-1/3 translate-y-[10%] font-medium opacity-0 Animationnavunhover";
-  let url = props.url;
 
   if (!props.selected){
     Image_class = "textnav z-10 opacity-50 brightness-0";
   } else {
     option_class = "relative left-[5%] pt-1 pb-1 border-b-2 border-white flex";
-    url = "#";
   }
   
   if (props.nav) {
@@ -152,7 +138,7 @@ export const Option = component$((props: { state: string, nav: boolean, image: s
 
   return (
     <>
-    <div onMouseDown$={() => window.location.href = url}>
+    <div>
       <options class={option_class}>
         <Image class={Image_class} width={36} height={36} src={props.image} />
         <p class={p_class}>{props.state}</p>
@@ -195,6 +181,31 @@ export const Switch = component$((props: { true: boolean, title: string, descrip
   )
 })
 
+export const Click = component$((props: { title: string, description: string, wait: boolean, text: string }) => {
+  let buttonshow = "block";
+  let spinshow = "hidden"
+
+  if (props.wait){
+    buttonshow = "hidden";
+    spinshow = "block"
+  }
+  
+  return(
+    <>
+    <setting class='ml-4 w-[146vh] flex pb-4 pt-4 border-b'>
+      <text class='flex flex-col h-full w-full'>
+        <name class='font-bold text-2xl ml-2'>{props.title}</name>
+        <description class='font-medium text-md ml-2'>{props.description}</description>
+      </text>
+      <buttonspace class='h-full'>
+        <button class={`bg-gray-100 duration-200 hover:bg-blue-400 border-gray-200 border whitespace-nowrap px-2 h-8 relative top-1/2 -translate-y-1/2 rounded-xl font-medium ${buttonshow}`}><p>{props.text}</p></button>
+        <Image src="/spinner.svg" width={42} height={42} class={`${spinshow} relative top-[15%] AnimtionOpening`} />
+      </buttonspace>
+    </setting>
+    </>
+  )
+})
+
 export const Slider = component$((props: { percentage: number, title: string, description: string }) => {
 
   return(
@@ -209,6 +220,19 @@ export const Slider = component$((props: { percentage: number, title: string, de
   before:absolute before:duration-75 before:h-6 before:w-6 before:bg-blue-500 before:-translate-y-1/2 before:-translate-x-1/2 before:rounded-full before:shadow-md Slider`} />
         
       </buttonspace>
+    </setting>
+    </>
+  )
+})
+
+export const Textbox = component$((props: { title: string, description: string }) => {
+  return(
+    <>
+    <setting class='ml-4 w-[149vh] flex pb-4 pt-4 border-b'>
+      <text class='flex flex-col h-full w-full'>
+        <name class='font-bold text-2xl ml-2'>{props.title}</name>
+        <description class='font-medium text-md ml-2'>{props.description}</description>
+      </text>
     </setting>
     </>
   )

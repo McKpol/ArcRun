@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "ArcRun Beta",
-    "version": "0.0.5"
+    "version": "0.0.6"
   },
   "tauri": {
     "systemTray": {
@@ -17,9 +17,32 @@
     },
     "allowlist": {
       "all": true,
+      
+      "path": {
+        "all": true
+      },
       "window": {
         "all": true,
         "close": true
+      },
+      "fs": {
+        "all": true, 
+        "readFile": true,
+        "writeFile": true,
+        "readDir": true,
+        "copyFile": true,
+        "createDir": true,
+        "removeDir": true,
+        "removeFile": true,
+        "renameFile": true,
+        "exists": true,
+        "scope": [
+          "**"
+        ]
+      },
+      "protocol": {
+        "asset": true,
+        "assetScope": ["**"]
       }
     },
     "bundle": {
@@ -38,7 +61,7 @@
         "icons/icon.ico",
         "icons/icon.png"
       ],
-      "identifier": "com.arcrun.arcrun",
+      "identifier": "com.mckpl.arcrun",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -85,7 +108,7 @@
         "decorations": false,
         "transparent": true,
         "label": "settings",
-        "url": "settings/main",
+        "url": "settings",
         "center": true,
         "alwaysOnTop": false,
         "fullscreen": false,

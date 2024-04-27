@@ -5,24 +5,32 @@ import { appWindow, LogicalPosition, LogicalSize } from "@tauri-apps/api/window"
 import { invoke } from "@tauri-apps/api";
 import { register, unregisterAll } from '@tauri-apps/api/globalShortcut';
 import * as tauriEvent from '@tauri-apps/api/event';
+import { convertFileSrc } from "@tauri-apps/api/tauri";
 
 interface Settings{
   scale: number;
   top: number;
+  left: number;
+  text: string;
+  icon: string;
 }
 
 export default component$(() => {
   const settings = useStore<Settings>({
     scale: 100,
-    top: 5
+    top: 5,
+    left: 5,
+    text: "Search with ArcRun",
+    icon: "/logo new.png"
   });
 
   useVisibleTask$(async () => {
   
     await unregisterAll(); 
 
-  let message: String;
+  let message: string;
 
+ async function Read(){
   // Read Scale
   message = await invoke("read_settings", {
     line: 0
@@ -33,7 +41,42 @@ export default component$(() => {
   message = await invoke("read_settings", {
     line: 1
   });
-  settings.top = Number(message) + 2;
+  
+  settings.top = Number(message) / 10;
+
+  // Read left
+  message = await invoke("read_settings", {
+    line: 2
+  });
+
+  settings.left = Number(message) / 10;
+
+  // Read text
+  message = await invoke("read_settings", {
+    line: 3
+  });
+
+  settings.text = message;
+
+  const iconset = await invoke("read_settings", {
+    line: 5
+  });
+
+  message = await invoke("read_settings", {
+    line: 4
+  });
+
+  if (iconset == "custom"){
+    settings.icon = convertFileSrc(message);
+  }
+  if (iconset == "deafult"){
+    settings.icon = "/logo new.png";
+  }
+
+  
+ }
+
+ Read();
   
   // Change Size
   await appWindow.setSize(new LogicalSize(825 * settings.scale / 100, 90 * settings.scale / 100));
@@ -139,18 +182,7 @@ document.addEventListener('keydown', (event) => {
 
   async function Showapp(first: boolean = false) {
 
-    let message: String;
-    // Read Scale
-    message = await invoke("read_settings", {
-      line: 0
-    });
-    settings.scale = Number(message) * 100 / 8 + 50;
-    
-    // Read top
-    message = await invoke("read_settings", {
-      line: 1
-    });
-    settings.top = Number(message) + 2;
+    Read();
 
     // Checking if window is not focused
     if (!block){
@@ -327,7 +359,7 @@ inputElement?.addEventListener('blur', () => {
   // Cloning and filling 'searchName' the 'programDiv' and 'dirDiv'
       for (let i = 0; message.length / 2 > i; i++){
         const name: any = searchName[i];
-        
+        const clone = document.getElementById("clone")!;
         if (name !== undefined){
         // 'programDiv'
           if (searchType[i] == "0"){
@@ -345,7 +377,7 @@ inputElement?.addEventListener('blur', () => {
             });
             clonepro.style.display = "flex";
             clone_list.push(clonepro);
-            programDiv.parentNode!.insertBefore(clonepro, programDiv.nextSibling);
+            programDiv.parentNode!.insertBefore(clonepro, clone.nextSibling);
           }
           if (searchType[i] == "1"){
             // 'dirDiv'
@@ -360,7 +392,7 @@ inputElement?.addEventListener('blur', () => {
             });
             clonedir.style.display = "flex";
             clone_list.push(clonedir);
-            dirDiv.parentNode!.insertBefore(clonedir, dirDiv.nextSibling);
+            dirDiv.parentNode!.insertBefore(clonedir, clone.nextSibling);
           }
         }
       }
@@ -399,8 +431,8 @@ inputElement?.addEventListener('blur', () => {
     } else {
       all.style.top = `${all.offsetHeight * ( 50 / 200 - (settings.scale - 50) / 200) * -1}px`
     }
-    x = window.screen.width / 2 - window.innerWidth / 2;
-    y = ((window.screen.height / settings.top) / window.devicePixelRatio) / (settings.scale / 100);
+    x = (window.screen.width / 2 - window.innerWidth / 2) * settings.left;
+    y = ((window.screen.height / 5) / window.devicePixelRatio) / (settings.scale / 100) * settings.top;
     
   });
 });
@@ -420,10 +452,10 @@ useOnDocument(
         <div id="search" class='bg-gray-200 relative rounded-[20px] text-gray border-2 border-gray-300 h-[90px] w-[800px] left-1/2 -translate-x-1/2 z-20'> 
           <div class='flex w-full h-full'>
             <div class='ml-2 h-[98%] w-20 '>
-              <Image width={47} height={47} class="opacity-100 top-1/2 -translate-y-1/2 relative left-1/2 -translate-x-1/2" src="/logo new.png" />
+              <Image width={47} height={47} class="opacity-100 top-1/2 -translate-y-1/2 relative left-1/2 -translate-x-1/2" src={settings.icon} />
             </div> 
             <div class='w-full'> 
-              <input id="input" placeholder="Search with ArcRun" autocomplete="off" class='font-roboto text-[40px] bg-transparent text-black px-2 h-full border-transparent w-[100%] relative top-1/2 -translate-y-1/2 focus:outline-none' />
+              <input id="input" placeholder={settings.text} autocomplete="off" class='font-roboto text-[40px] bg-transparent text-black px-2 h-full border-transparent w-[100%] relative top-1/2 -translate-y-1/2 focus:outline-none' />
             </div>
             <div class='bg-gradient-to-r from-transparent via-gray-200/70 to-gray-200 absolute w-12 h-full right-0 mr-5' />
               <div class='w-4' />
@@ -431,6 +463,7 @@ useOnDocument(
         </div>
         
         <div id='result' class='hidden bg-white/0 mt-[0.5rem] h-5/6 w-full relative bottom-0 rounded-[20px] z-10'>
+          <div id='clone' class='flex flex-col'></div>
         {/* div jako program */}
         <div id='programMain' class='hidden mb-1 relative shadow-lg left-1/2 -translate-x-1/2 transition-all duration-200 cursor-pointer rounded-[10px] w-[795px] h-[75px] bg-gray-200 overflow-hidden
           before:duration-100 before:left-1/2 before:-translate-x-1/2 before:rounded-[9px] before:h-full before:delay-75 before:transition-all before:absolute'>

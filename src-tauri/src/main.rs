@@ -1,8 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use serde_json::Number;
-use tauri::{utils::config, Manager};
+use tauri::Manager;
 use std::{fs::{self, File, OpenOptions}, io::{Read, Write}};
 use walkdir::WalkDir;
 use whoami;
@@ -17,7 +16,7 @@ use tauri::AppHandle;
 use native_dialog::{MessageDialog, MessageType};
 use tauri::SystemTrayMenuItem;
 
-static CONFIG_FILL: [&str; 2] = ["4", "3"];
+static CONFIG_FILL: [&str; 6] = ["4", "10", "10", "Search with ArcRun", "/image.svg", "deafult"];
 
 fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
   let user_name =  whoami::username();
@@ -44,6 +43,48 @@ fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
   Ok(())
 }
 
+fn settings() -> Result<(), Box<dyn std::error::Error>>{
+    // CONFIG FILE
+
+    let mut config_fill = CONFIG_FILL; // Deafult Settings
+
+    let user_name = whoami::username();
+    let config_file = format!("C:/Users/{}/AppData/Roaming/arcrun/config", user_name);
+    let mut config_open = OpenOptions::new().read(true).write(true).create(true).append(true).open(config_file.clone())?;
+    let mut config_string = String::new();
+    config_open.read_to_string(&mut config_string)?;
+  
+    let mut i = 0;
+    for lines in config_string.lines(){
+        config_fill[i] = lines;
+        i += 1;
+    }
+  
+    fs::write(config_file.clone(), "")?;
+  
+    for lines in config_fill{
+      writeln!(config_open, "{}", lines)?;
+    }
+  Ok(())
+}
+
+fn reset_settings() -> Result<(), Box<dyn std::error::Error>>{
+  // CONFIG FILE
+
+  let config_fill = CONFIG_FILL; // Deafult Settings
+
+  let user_name = whoami::username();
+  let config_file = format!("C:/Users/{}/AppData/Roaming/arcrun/config", user_name);
+  let mut config_open = OpenOptions::new().read(true).write(true).create(true).append(true).open(config_file.clone())?;
+
+  fs::write(config_file.clone(), "")?;
+
+  for lines in config_fill{
+    writeln!(config_open, "{}", lines)?;
+  }
+Ok(())
+}
+
 #[derive(Clone, serde::Serialize)]
 struct Payload {
   args: Vec<String>,
@@ -58,28 +99,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Err(e) => println!("Cannot cached program list: {}", e)
   }
 
-  // CONFIG FILE
-
-  let mut config_fill = CONFIG_FILL; // Deafult Settings
-
-  let user_name = whoami::username();
-  let config_file = format!("C:/Users/{}/AppData/Roaming/arcrun/config", user_name);
-  let mut config_open = OpenOptions::new().read(true).write(true).create(true).append(true).open(config_file.clone())?;
-  let mut config_string = String::new();
-  config_open.read_to_string(&mut config_string)?;
-
-  let mut i = 0;
-  for lines in config_string.lines(){
-    config_fill[i] = lines;
-    i += 1;
+  match settings(){
+    Ok(_) => println!("Settings file set"),
+    Err(e) => println!("Cannot set setting file: {}", e)
   }
-
-  fs::write(config_file.clone(), "")?;
-
-  for lines in config_fill{
-    writeln!(config_open, "{}", lines)?;
-  }
-
 
   let settings = CustomMenuItem::new("settings".to_string(), "Settings");
   let quit = CustomMenuItem::new("quit".to_string(), "Quit");
@@ -123,10 +146,34 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
       println!("{}, {argv:?}, {cwd}", app.package_info().name);
       app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
   }))
-    .invoke_handler(tauri::generate_handler![search, open, cant_set_hotkey, set_auto_start, check_auto_start, read_settings, write_settings])
+    .invoke_handler(tauri::generate_handler![search, open, cant_set_hotkey, set_auto_start, check_auto_start, read_settings, write_settings, cache_programs_tauri, settings_tauri, reset_settings_tauri])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
   Ok(())
+}
+
+#[tauri::command]
+fn cache_programs_tauri(){
+  match cache_programs(){
+    Ok(_) => println!("Cashed program list"),
+    Err(e) => println!("Cannot cached program list: {}", e)
+  }
+}
+
+#[tauri::command]
+fn settings_tauri(){
+  match settings(){
+    Ok(_) => println!("Settings file set"),
+    Err(e) => println!("Cannot set setting file: {}", e)
+  }
+}
+
+#[tauri::command]
+fn reset_settings_tauri(){
+  match reset_settings(){
+    Ok(_) => println!("Settings file reset"),
+    Err(e) => println!("Cannot reset settings file: {}", e)
+  }
 }
 
 #[tauri::command]
@@ -241,7 +288,6 @@ fn search(search: String) -> Vec<String> {
   let mut nline = 0;
   let mut nb_result = 0;
   let mut lista: Vec<String> = Vec::new();
-  let mut listadir: Vec<String> = Vec::new();
   file_path.unwrap().read_to_string(&mut buf).unwrap();
 
   let mut path: &Path;
@@ -263,9 +309,9 @@ fn search(search: String) -> Vec<String> {
         lista.push(name.to_string());
         lista.push("0".to_string());
       } else {
-        listadir.push(nline.to_string());
-        listadir.push(name.to_string());
-        listadir.push("1".to_string());
+        lista.push(nline.to_string());
+        lista.push(name.to_string());
+        lista.push("1".to_string());
       }
 
       if nb_result == 8{
@@ -274,7 +320,6 @@ fn search(search: String) -> Vec<String> {
     }
     nline += 1;
   }
-  lista.extend(listadir);
 
   lista.into()
 }
