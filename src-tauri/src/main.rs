@@ -1,8 +1,10 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use lnk::ShellLink;
+use serde::de::value::Error;
 use tauri::Manager;
-use std::{fs::{self, File, OpenOptions}, io::{Read, Write}};
+use std::{any::Any, fs::{self, File, OpenOptions}, io::{Read, Write}};
 use walkdir::WalkDir;
 use whoami;
 use std::path::Path;
@@ -15,6 +17,7 @@ use auto_launch::AutoLaunchBuilder;
 use tauri::AppHandle;
 use native_dialog::{MessageDialog, MessageType};
 use tauri::SystemTrayMenuItem;
+use pelite::{FileMap, PeFile};
 
 static CONFIG_FILL: [&str; 6] = ["4", "10", "10", "Search with ArcRun", "/image.svg", "deafult"];
 
@@ -24,9 +27,10 @@ fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
   let path_files = format!("C:/Users/{}/AppData/Roaming/arcrun/", user_name);
   let path_path = format!("{}/listpath", path_files);
   let path_cache = format!("{}/listcache", path_files);
-
+  let path_icon = format!("{}/icons", path_files);
+  
   // Creating dir and file
-  fs::create_dir_all(path_files)?;
+  fs::create_dir_all(path_icon)?;
   let mut file = OpenOptions::new().read(true).write(true).create(true).append(true).open(path_path.clone())?;
   OpenOptions::new().read(true).write(true).create(true).append(true).open(path_cache.clone())?;
   // Empting a file
@@ -275,6 +279,30 @@ fn write_settings(line: usize, content: String){
   }
 }
 
+fn lnk(line: &str, name: &str) -> Option<String> {
+  match lnk::ShellLink::open(line) {
+      Ok(lnk) => {
+          if let Some(iconlocation) = lnk::ShellLink::icon_location(&lnk) {
+              print!("{}", name);
+              let user_name =  whoami::username();
+              let path_files = format!("C:/Users/{}/AppData/Roaming/arcrun/icons", user_name);
+
+              match std::fs::copy(iconlocation.to_string(), format!("{}/{}.ico", path_files, name)){
+                Ok(_) => print!(""),
+                Err(e) => println!("{}", e)
+              }
+          } else if let Some(link_info) = lnk.link_info() {
+            return Some(link_info.local_base_path().as_ref()?.to_string());
+          }
+          None
+      }
+      Err(_) => {
+          println!("Wrong location");
+          None
+      }
+  }
+}
+
 #[tauri::command]
 fn search(search: String) -> Vec<String> {
   let user_name =  whoami::username();
@@ -292,6 +320,7 @@ fn search(search: String) -> Vec<String> {
 
   let mut path: &Path;
   let mut file;
+  let mut ext;
   let mut name = "ERROR";
   // Search in file chprocut_file
   for line in buf.lines(){
@@ -308,6 +337,15 @@ fn search(search: String) -> Vec<String> {
         lista.push(nline.to_string());
         lista.push(name.to_string());
         lista.push("0".to_string());
+        ext = path.extension().unwrap().to_str().unwrap();
+        if ext == "lnk" && Path::new(&format!("C:/Users/{}/AppData/Roaming/arcrun/icons/{}.ico", user_name, nline)).exists() == false && lnk(&line, &nline.to_string()) != None {
+          match get_icon(&lnk(&line, &nline.to_string()).unwrap().replace("\\", "/"), &nline.to_string()){
+            Ok(()) => print!(""),
+            Err(e) => println!("Cannot write an icon: {}", e)
+          }
+        } else {
+          println!("skipped")
+        }
       } else {
         lista.push(nline.to_string());
         lista.push(name.to_string());
@@ -375,4 +413,25 @@ fn set_auto_start(){
     },
 };
 
+}
+
+fn get_icon(path: &str, name: &str) -> Result<(), Box<dyn std::error::Error>>{
+  let user_name =  whoami::username();
+  let path_files = format!("C:/Users/{}/AppData/Roaming/arcrun/icons", user_name);
+
+  let map = FileMap::open(&path)?;
+  let file = PeFile::from_bytes(&map)?;
+  let loca = PathBuf::from(&path_files);
+  let resources = file.resources()?;
+
+  for (_name, group) in resources.icons().filter_map(Result::ok) {
+  
+  // Write the ICO file
+  let mut contents = Vec::new();
+  group.write(&mut contents).unwrap();
+  let path = loca.join(&format!("{}/{}.ico", path_files, name));
+  println!("{}", path.display());
+  let _ = std::fs::write(&path, &contents)?;
+}
+Ok(())
 }
