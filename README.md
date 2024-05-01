@@ -15,8 +15,7 @@ ArcRun is swift, safe searchbar with smooth and great desing.
 ### front end
 - [x] Add settings window
 - [ ] Add all results window
-- [ ] Add icons to results
-- [ ] Add open as administrator
+- [x] Add icons to results
 
 ### settings
 - [ ] Add more themes
@@ -28,7 +27,6 @@ ArcRun is swift, safe searchbar with smooth and great desing.
 
 ### search engine
 - [ ] Add queue to the search (don't wait for searching all the cache to give the results)
-- [ ] Add more folders to search
 - [ ] Add multithreading to backend
 - [ ] Add compress to cache
 - [ ] Add .Ink file are returning the original file on themself
