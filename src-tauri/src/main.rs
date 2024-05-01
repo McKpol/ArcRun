@@ -17,7 +17,7 @@ use auto_launch::AutoLaunchBuilder;
 use tauri::AppHandle;
 use native_dialog::{MessageDialog, MessageType};
 use tauri::SystemTrayMenuItem;
-use pelite::{FileMap, PeFile};
+use pelite::{FileMap, PeFile, Wrap};
 
 static CONFIG_FILL: [&str; 6] = ["4", "10", "10", "Search with ArcRun", "/image.svg", "deafult"];
 
@@ -150,7 +150,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
       println!("{}, {argv:?}, {cwd}", app.package_info().name);
       app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
   }))
-    .invoke_handler(tauri::generate_handler![search, open, cant_set_hotkey, set_auto_start, check_auto_start, read_settings, write_settings, cache_programs_tauri, settings_tauri, reset_settings_tauri])
+    .invoke_handler(tauri::generate_handler![search, open, cant_set_hotkey, set_auto_start, check_auto_start, read_settings, write_settings, cache_programs_tauri, settings_tauri, reset_settings_tauri, get_username])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
   Ok(())
@@ -280,17 +280,43 @@ fn write_settings(line: usize, content: String){
 }
 
 fn lnk(line: &str, name: &str) -> Option<String> {
+  println!("{}", line);
   match lnk::ShellLink::open(line) {
       Ok(lnk) => {
           if let Some(iconlocation) = lnk::ShellLink::icon_location(&lnk) {
-              print!("{}", name);
               let user_name =  whoami::username();
               let path_files = format!("C:/Users/{}/AppData/Roaming/arcrun/icons", user_name);
-
-              match std::fs::copy(iconlocation.to_string(), format!("{}/{}.ico", path_files, name)){
+              let mut result = "".to_string();
+              let mut other = iconlocation.to_string();
+              if iconlocation.contains("%"){
+              let mut count = 0;
+              other = "".to_string();
+              for letter in iconlocation.chars(){
+                if letter == '%'{
+                  count += 1;
+                  if count == 2 {let key = std::env::var(result.clone());other.push_str(&key.unwrap())}
+                } else {
+                  if count == 1{
+                  result.push(letter);
+                } else {
+                  other.push(letter);
+                }
+                }
+              }
+            }
+            
+            let map = FileMap::open(&other).unwrap();
+            match PeFile::from_bytes(&map){
+              Ok(_) => print!(""),
+              Err(_) => {
+                match std::fs::copy(other.to_string(), format!("{}/{}.ico", path_files, name)){
                 Ok(_) => print!(""),
                 Err(e) => println!("{}", e)
               }
+            },
+            }
+
+            return Some(other);
           } else if let Some(link_info) = lnk.link_info() {
             return Some(link_info.local_base_path().as_ref()?.to_string());
           }
@@ -303,6 +329,33 @@ fn lnk(line: &str, name: &str) -> Option<String> {
   }
 }
 
+fn url(line: &str, name: &str) {
+  let user_name =  whoami::username();
+  let path_files = format!("C:/Users/{}/AppData/Roaming/arcrun/icons", user_name);
+  let mut file = fs::File::open(line).unwrap();
+  let mut contents = String::new();
+  let mut output = "".to_string();
+  let mut number = 0;
+  file.read_to_string(&mut contents).unwrap();
+
+  for line in contents.lines() {
+    if line.contains("IconFile="){
+      for char in line.chars(){
+        if number == 1{
+          output.push(char);
+        }
+        if char == '='{
+          number += 1;
+        }
+      }
+  }
+  }
+  match std::fs::copy(output, format!("{}/{}.ico", path_files, name)){
+    Ok(_) => print!(""),
+    Err(e) => println!("{}", e)
+  }
+}
+
 #[tauri::command]
 fn search(search: String) -> Vec<String> {
   let user_name =  whoami::username();
@@ -310,7 +363,6 @@ fn search(search: String) -> Vec<String> {
   let path_path = format!("{}/listpath", path_files);
 
   let file_path = File::open(path_path);
-
   // Data
   let mut buf = String::new();
   let mut nline = 0;
@@ -338,13 +390,14 @@ fn search(search: String) -> Vec<String> {
         lista.push(name.to_string());
         lista.push("0".to_string());
         ext = path.extension().unwrap().to_str().unwrap();
-        if ext == "lnk" && Path::new(&format!("C:/Users/{}/AppData/Roaming/arcrun/icons/{}.ico", user_name, nline)).exists() == false && lnk(&line, &nline.to_string()) != None {
+        if ext == "lnk" && Path::new(&format!("C:/Users/{}/AppData/Roaming/arcrun/icons/{}.ico", user_name, nline)).exists() == false && line.contains("PowerShell") == false && lnk(&line, &nline.to_string()) != None {
           match get_icon(&lnk(&line, &nline.to_string()).unwrap().replace("\\", "/"), &nline.to_string()){
             Ok(()) => print!(""),
             Err(e) => println!("Cannot write an icon: {}", e)
           }
-        } else {
-          println!("skipped")
+        }
+        if ext == "url" && Path::new(&format!("C:/Users/{}/AppData/Roaming/arcrun/icons/{}.ico", user_name, nline)).exists() == false {
+          url(&line, &nline.to_string());
         }
       } else {
         lista.push(nline.to_string());
@@ -420,18 +473,25 @@ fn get_icon(path: &str, name: &str) -> Result<(), Box<dyn std::error::Error>>{
   let path_files = format!("C:/Users/{}/AppData/Roaming/arcrun/icons", user_name);
 
   let map = FileMap::open(&path)?;
-  let file = PeFile::from_bytes(&map)?;
-  let loca = PathBuf::from(&path_files);
-  let resources = file.resources()?;
-
-  for (_name, group) in resources.icons().filter_map(Result::ok) {
   
-  // Write the ICO file
-  let mut contents = Vec::new();
-  group.write(&mut contents).unwrap();
-  let path = loca.join(&format!("{}/{}.ico", path_files, name));
-  println!("{}", path.display());
-  let _ = std::fs::write(&path, &contents)?;
-}
+    let file = PeFile::from_bytes(&map)?;
+    let loca = PathBuf::from(&path_files);
+    let resources = file.resources()?;
+  
+    for (_name, group) in resources.icons().filter_map(Result::ok) {
+    
+    // Write the ICO file
+    let mut contents = Vec::new();
+    group.write(&mut contents)?;
+    let path = loca.join(&format!("{}/{}.ico", path_files, name));
+    println!("{}", path.display());
+    let _ = std::fs::write(&path, &contents)?;
+  }
+
 Ok(())
+}
+
+#[tauri::command]
+fn get_username() -> String {
+  whoami::username()
 }

@@ -93,6 +93,7 @@ export default component$(() => {
   const dirDiv = document.getElementById("dirMain")!;
   const clone_list: HTMLElement[] = [];
   const all = document.getElementById("all")!;
+  const username = await invoke("get_username");
   let otherAction = 0;
   let lenghtList = 0;
   let programList = 0;
@@ -102,6 +103,7 @@ export default component$(() => {
   let alreadySearching = false;
   let block = false;
   let blockhide = false;
+  
 
 // Search results
   const searchType: string[] = [];
@@ -355,6 +357,7 @@ inputElement?.addEventListener('blur', () => {
     searchName.reverse();
     searchType.reverse();
 
+    let image = "/program.svg";
 
   // Cloning and filling 'searchName' the 'programDiv' and 'dirDiv'
       for (let i = 0; message.length / 2 > i; i++){
@@ -366,6 +369,17 @@ inputElement?.addEventListener('blur', () => {
             const clonepro = programDiv.cloneNode(true) as HTMLElement;
             clonepro.id = i.toString();
             clonepro.children[1].children[0].textContent = name.toString();
+
+            image = await convertFileSrc("C:/Users/" + username + "/AppData/Roaming/arcrun/icons/" + searchNumber[i] + ".ico")
+
+            const imageelement = clonepro.children[0].children[0] as HTMLImageElement;
+
+            imageelement.src = image;
+
+            imageelement.addEventListener("error", () => {
+              imageelement.src = "/program.svg"
+            })
+
             clonepro.children[2].children[0].addEventListener('mouseenter', function() {
               otherAction = 1;
             });
