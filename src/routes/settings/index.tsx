@@ -3,6 +3,7 @@ import { Image } from '@unpic/qwik';
 import { appWindow } from '@tauri-apps/api/window';
 import { ContentMain } from './main/index';
 import { ContentData } from './data/index';
+import './style.css';
 
 interface State {
   main: string;

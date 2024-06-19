@@ -1,10 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use lnk::ShellLink;
-use serde::de::value::Error;
 use tauri::Manager;
-use std::{any::Any, fs::{self, File, OpenOptions}, io::{Read, Write}};
+use std::{fs::{self, File, OpenOptions}, io::{Read, Write}};
 use walkdir::WalkDir;
 use whoami;
 use std::path::Path;
@@ -17,13 +15,13 @@ use auto_launch::AutoLaunchBuilder;
 use tauri::AppHandle;
 use native_dialog::{MessageDialog, MessageType};
 use tauri::SystemTrayMenuItem;
-use pelite::{FileMap, PeFile, Wrap};
+use pelite::{FileMap, PeFile};
 
 static CONFIG_FILL: [&str; 6] = ["4", "10", "10", "Search with ArcRun", "/image.svg", "deafult"];
 
 fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
-  let user_name =  whoami::username();
-  let programs_path = format!("C:/Users/{}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/", user_name);
+  let user_name = whoami::username();
+  let mut programs_path = format!("C:/Users/{}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/", user_name);
   let path_files = format!("C:/Users/{}/AppData/Roaming/arcrun/", user_name);
   let path_path = format!("{}/listpath", path_files);
   let path_cache = format!("{}/listcache", path_files);
@@ -35,9 +33,20 @@ fn cache_programs<>() -> Result<(), Box<dyn std::error::Error>> {
   OpenOptions::new().read(true).write(true).create(true).append(true).open(path_cache.clone())?;
   // Empting a file
   fs::write(path_path.clone(), "")?;
+  
   // Search folder
   for programlist in WalkDir::new(programs_path).into_iter().filter_map(|file| file.ok()) {
-    if programlist.metadata().unwrap().is_file() && programlist.path().extension().unwrap().to_str().unwrap() != "ini" {
+    if programlist.metadata().unwrap().is_file() && programlist.path().extension() != None && programlist.path().extension().unwrap().to_str().unwrap() != "ini" {
+      writeln!(file, "{}", format!("{}", programlist.path().display()))?;
+    }
+    if programlist.metadata().unwrap().is_dir(){
+      writeln!(file, "{}", format!("{}", programlist.path().display()))?;
+    }
+  }
+
+  programs_path = "C:/ProgramData/Microsoft/Windows/Start Menu/Programs".to_string();
+  for programlist in WalkDir::new(programs_path).into_iter().filter_map(|file| file.ok()) {
+    if programlist.metadata().unwrap().is_file() && programlist.path().extension() != None && programlist.path().extension().unwrap().to_str().unwrap() != "ini" {
       writeln!(file, "{}", format!("{}", programlist.path().display()))?;
     }
     if programlist.metadata().unwrap().is_dir(){
@@ -405,7 +414,7 @@ fn search(search: String) -> Vec<String> {
         lista.push("1".to_string());
       }
 
-      if nb_result == 8{
+      if nb_result == 25{
         break;
       }
     }

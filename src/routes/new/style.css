@@ -1,0 +1,19 @@
+.notfull{
+  height: calc(100% - 162px);
+}
+
+.full{
+  height: 100%;
+}
+
+.enter{
+  width: 128.8px;
+}
+
+.enterfolder{
+  width: 68.4px;
+}
+
+.exit{
+  width: 0%;
+}

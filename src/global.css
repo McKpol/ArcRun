@@ -34,10 +34,6 @@
  *
  */
 
- ::-webkit-scrollbar {
-  display: none;
-}
-
  html {
   -webkit-text-size-adjust: 100%;
   -moz-tab-size: 4;
@@ -67,7 +63,7 @@ body {
   overflow: hidden;
 }
 
-.hovered-result {
+/* .hovered-result {
   width: 825px;
   margin-top: -0.05rem;
   margin-bottom: 0.3rem;
@@ -112,19 +108,9 @@ body {
   margin-top: -0.05rem;
   margin-bottom: 0.3rem;
   box-shadow: 0 1px 3px #000000ee;
-}
+} */
 
-@keyframes spin {
-  100%{
-    rotate: 720deg;
-  }
-}
-
-.AnimtionOpening{
-  animation: spin 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.90) infinite;
-}
-
-@keyframes show {
+/* @keyframes show {
   0%{
     transform: translate(0px, -120%);
     opacity: 5%;
@@ -137,136 +123,18 @@ body {
 
 .AnimationShow{
   animation: show .35s cubic-bezier(0.22, 1, 0.36, 1) normal;
-  
 }
 
 .ResetShow{
   transform: translate(0px, -100%);
-}
+} */
 
-@keyframes animateText {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes reversedanimateText {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-
-.Animationnavunhover {
-  animation: animateText .1s ease-in-out normal forwards;
-}
-
-
-@keyframes reversedanimateImage {
-  0%{
-    filter: brightness(0%);
-    opacity: 80%;
-  }
+@keyframes spin {
   100%{
-    filter: brightness(100%);
-    opacity: 100%;
+    rotate: 720deg;
   }
 }
 
-.AnimationImagehover {
-  animation: animateImage 0s ease-in-out normal forwards;
-}
-
-.AnimationImageunhover {
-  animation: reversedanimateImage .1s ease-in-out normal forwards;
-}
-
-.AnimationOpeningNavBarhover{
-  width: 13rem;
-}
-
-@keyframes switchon {
-  0%{
-    background-color: rgb(229 231 235);
-  }
-  100%{
-    background-color: rgb(74 222 128);
-  }
-}
-
-@keyframes ballswitchon {
-  0%{
-    left: 0%;
-  }
-  100%{
-    left: 2rem;
-  }
-}
-
-@keyframes switchoff {
-  0%{
-    background-color: rgb(74 222 128);
-  }
-  100%{
-    background-color: rgb(229 231 235);
-  }
-}
-
-@keyframes ballswitchoff {
-  0%{
-    left: 2rem;
-  }
-  100%{
-    left: 0%;
-  }
-}
-
-.AnimationSwitchOn{
-  animation: switchon .15s ease-in-out normal forwards;
-}
-
-.AnimationSwitchOn::before{
-  animation: ballswitchon .15s ease-in-out normal forwards;
-}
-
-.AnimationSwitchOff{
-  animation: switchoff .15s ease-in-out normal forwards;
-}
-
-.AnimationSwitchOff::before{
-  animation: ballswitchoff .15s ease-in-out normal forwards;
-}
-
-.AnimationSwitchOnNon{
-  animation: switchon 0s ease-in-out normal forwards;
-}
-
-.AnimationSwitchOnNon::before{
-  animation: ballswitchon 0s ease-in-out normal forwards;
-}
-
-.AnimationSwitchOffNon{
-  animation: switchoff 0s ease-in-out normal forwards;
-}
-
-.AnimationSwitchOffNon::before{
-  animation: ballswitchoff 0s ease-in-out normal forwards;
-}
-
-.Slider::before{
-  left: var(--left);
-}
-
-.searchbar-set{
-  transform: scale(var(--scale));
-}
-
-.searchbar-settop{
-  top: var(--y);
+.AnimtionOpening{
+  animation: spin 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.90) infinite;
 }
