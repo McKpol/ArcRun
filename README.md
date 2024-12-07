@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This project is deprecated, right now I (@mckpl) am working on rework!
+
 
 # ![32x32](https://github.com/McKpol/ArcRun/assets/104125769/449841d4-7e0d-42ac-ae74-4cd9763a6221) ArcRun by McKpl
 
@@ -9,6 +12,8 @@ ArcRun is swift, safe searchbar with smooth and great desing.
 
 > [!WARNING]
 > Program is still in early development and it need so much to improve, it may have some bugs!
+
+To show searchbar click Alt + Space
 
 ## Things to improve
 
