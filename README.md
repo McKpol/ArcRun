@@ -13,7 +13,7 @@ ArcRun is swift, safe searchbar with smooth and great desing.
 > [!WARNING]
 > Program is still in early development and it need so much to improve, it may have some bugs!
 
-To show searchbar click Alt + Space
+# To show searchbar click Alt + Space
 
 ## Things to improve
 
