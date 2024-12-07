@@ -1,5 +1,5 @@
 > [!IMPORTANT]
-> This project is deprecated, right now I (@mckpl) am working on rework!
+> This project is deprecated. I (@mckpl) am working on a rework!
 
 
 # ![32x32](https://github.com/McKpol/ArcRun/assets/104125769/449841d4-7e0d-42ac-ae74-4cd9763a6221) ArcRun by McKpl
